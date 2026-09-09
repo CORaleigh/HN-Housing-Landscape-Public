@@ -183,14 +183,17 @@ export const DATA_SOURCES = {
   fundingByYear: {
     url: `${ORG}/HN_Funding_By_Year/FeatureServer/0`,
     query: "where=1%3D1&outFields=*&orderByFields=Fiscal_Year_End&returnGeometry=false&f=json",
-    adaptRows: (rows) => rows
-      .filter((r) => String(r.Include_In_Chart || "").trim() === "Yes")
-      .map((r) => ({
-        program: r.Program,
-        fiscalYear: r.Fiscal_Year_Label || r.Fiscal_Year,
-        amount: Number(r.City_Funding) || 0,
-        records: Number(r.Records) || 0,
-      })),
+    /* Every row comes through, including the ones the chart leaves out. The
+     * page needs them to say, in figures, what the newer basis would have
+     * shown, which is the whole point of the note under the chart. */
+    adaptRows: (rows) => rows.map((r) => ({
+      program: r.Program,
+      fiscalYear: r.Fiscal_Year_Label || r.Fiscal_Year,
+      amount: Number(r.City_Funding) || 0,
+      records: Number(r.Records) || 0,
+      basis: r.Construction_Basis,
+      inChart: String(r.Include_In_Chart || "").trim() === "Yes",
+    })),
   },
   bondProjects: {
     url: `${ORG}/HN_Bond_Projects/FeatureServer/0`,

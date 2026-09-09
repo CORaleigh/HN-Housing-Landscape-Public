@@ -362,6 +362,9 @@
         <div class="card">
           <h3 style="margin:0 0 12px 0;">Total funding by year</h3>
           <div class="chart-box" style="height: 300px;"><canvas id="fundingByYear"></canvas></div>
+          <!-- Filled in only where a build reads a prepared funding table, since
+               only then is there a documented basis to explain. -->
+          <div class="note" id="fundingBasisNote" hidden></div>
         </div>
       </div>
 
@@ -2030,15 +2033,40 @@
            * the map layer instead mixes completed and pipeline money and makes
            * the latest year tower over the rest. */
           const fundingDS = dataSource("fundingByYear");
+          let basisNote = "";
           if (fundingDS) {
             const wanted = selectedLayerId ? FUNDING_LAYERS_MAP[selectedLayerId] : null;
-            const rows = await loadSource("fundingByYear");
-            rows.forEach(r => {
-              if (wanted && r.program !== wanted) return;
+            const rows = (await loadSource("fundingByYear"))
+              .filter(r => !wanted || r.program === wanted);
+            rows.filter(r => r.inChart !== false).forEach(r => {
               const fy = r.fiscalYear || "Unknown";
               if (!byYear[fy]) byYear[fy] = {};
               byYear[fy].total = (byYear[fy].total || 0) + (Number(r.amount) || 0);
             });
+
+            /* Say in figures what the newer basis would have shown, rather than
+             * only asserting that a basis changed. Read off the same rows, so
+             * the sentence cannot drift from the chart it sits under. */
+            const shownYears = Object.keys(byYear).sort();
+            const latest = shownYears[shownYears.length - 1];
+            const shown = latest ? (byYear[latest].total || 0) : 0;
+            const left = rows.filter(r => r.inChart === false && r.fiscalYear === latest)
+                             .reduce((t, r) => t + (Number(r.amount) || 0), 0);
+            if (latest && left > 0) {
+              const fyName = "FY " + latest;
+              basisNote =
+                `<strong>How these years are counted.</strong> A project is counted in the ` +
+                `fiscal year it was <em>completed</em>. Every bar above uses that rule, ` +
+                `${fyName} included. From ${fyName} the department's tracker changed to dating ` +
+                `a project when its funding is committed instead. On that newer basis ${fyName} ` +
+                `would read <strong>${fmtMoney(shown + left)}</strong> rather than ` +
+                `<strong>${fmtMoney(shown)}</strong>, because it would add ${fmtMoney(left)} ` +
+                `committed to projects still in pre-construction or under construction. That ` +
+                `money is real, and those projects appear in the Housing pipeline section ` +
+                `below. It is left out of this chart because no earlier year contains anything ` +
+                `comparable, so including it would show a jump in spending where what actually ` +
+                `changed is when spending gets dated.`;
+            }
           }
 
           const layersToQuery = fundingDS ? []
@@ -2084,21 +2112,19 @@
             .map(([id, n]) => `${n} ${FUNDING_LAYERS_MAP[id].toLowerCase()}`).join(", ");
           const caveatParts = [];
           if (fundingDS) {
-            /* The basis note Mary asked for on 2026-09-08. Before FY2025-2026 a
-             * project was dated to a fiscal year only once it completed. The
-             * FY2026-FY2030 tracker dates a project when it is funded instead.
-             * Counting the new way would put FY2025-2026 far above every other
-             * year for a reason that is a change of method, not of spending. */
-            caveatParts.push(`Completed projects only, on the same basis as every earlier year. ` +
-              `Before FY 2025-2026 a project was counted in a fiscal year once it was completed; ` +
-              `the current tracker instead dates a project when it is funded. This chart keeps the ` +
-              `older basis so the years can be compared, which means money committed to projects ` +
-              `still in the pipeline is not shown here.`);
+            /* Nothing above the chart on this path. The full explanation sits in
+             * small text directly under the bars, where someone reading a
+             * surprising year will actually look for it. */
           } else {
             if (unitGaps) caveatParts.push(`No Total Units recorded (counted as 0, not excluded): ${unitGaps}.`);
             caveatParts.push(`The unit totals below reflect only projects with Total Units recorded — they are not a count of all projects, and will undercount true production wherever Total Units is blank.`);
           }
           document.getElementById("fundingCaveat").innerHTML = caveatParts.join(" ");
+          const basisEl = document.getElementById("fundingBasisNote");
+          if (basisEl) {
+            basisEl.innerHTML = basisNote;
+            basisEl.hidden = !basisNote;
+          }
 
           // Render bar chart (total funding by year)
           // FY 2026-2027 has no committed funding recorded yet (0-value bar was
