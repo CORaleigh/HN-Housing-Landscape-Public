@@ -507,6 +507,24 @@
        * deployed as config.js. Everything that differs between the two builds
        * is driven from the UI object rather than from scattered MODE checks.  */
       document.body.dataset.mode = MODE;
+
+      /* Fetch a source declared in DATA_SOURCES and hand back plain attribute
+       * rows. A build whose table is shaped differently supplies `adaptRows`,
+       * which reshapes here so every chart below stays untouched. `fallbackUrl`
+       * keeps this working if a config predates DATA_SOURCES.
+       * Module scope on purpose: several sections read their own source, and
+       * they do not share an enclosing block. */
+      const dataSource = (key) =>
+        (typeof DATA_SOURCES !== "undefined" && DATA_SOURCES && DATA_SOURCES[key]) || null;
+      const loadSource = async (key, fallbackUrl, fallbackQuery) => {
+        const ds = dataSource(key);
+        const url = (ds && ds.url) || fallbackUrl;
+        const q = (ds && ds.query) || fallbackQuery;
+        const json = await (await fetch(url + "/query?" + q)).json();
+        if (json && json.error) throw new Error(key + ": " + JSON.stringify(json.error));
+        const rows = (json.features || []).map(f => f.attributes || {});
+        return (ds && typeof ds.adaptRows === "function") ? ds.adaptRows(rows) : rows;
+      };
       if (!UI.showSourceNotes) document.body.classList.add("hide-source-notes");
 
       // Name the build in the tab title and the masthead so the Internal (PII)
@@ -1454,20 +1472,6 @@
       };
       const SF = SUMMARY_TABLE.fields, CATS = SUMMARY_TABLE.categories;
 
-      /* Fetch a source declared in DATA_SOURCES and hand back plain attribute
-       * rows. A build whose table is shaped differently supplies `adaptRows`,
-       * which reshapes here so every chart below stays untouched. `fallbackUrl`
-       * keeps this working if a config predates DATA_SOURCES. */
-      const loadSource = async (key, fallbackUrl, fallbackQuery) => {
-        const ds = (typeof DATA_SOURCES !== "undefined" && DATA_SOURCES && DATA_SOURCES[key]) || null;
-        const url = (ds && ds.url) || fallbackUrl;
-        const q = (ds && ds.query) || fallbackQuery;
-        const json = await (await fetch(url + "/query?" + q)).json();
-        if (json && json.error) throw new Error(key + ": " + JSON.stringify(json.error));
-        const rows = (json.features || []).map(f => f.attributes || {});
-        return (ds && typeof ds.adaptRows === "function") ? ds.adaptRows(rows) : rows;
-      };
-
       const sumRows = await loadSource("summary", SUMMARY_TABLE.url,
         `where=1%3D1&outFields=*&orderByFields=${SF.endYear},${SF.quarter}&returnGeometry=false&f=json`);
       const latestUpdate = (sumRows.map(r => r[SF.dateUpdated]).filter(Boolean).sort().pop()) || "n/a";
@@ -2017,7 +2021,28 @@
           const missingUnits = {};    // records per layer with no Total_Units (counted as 1 in the pie chart)
           console.log("Rendering funding charts - layer:", selectedLayerId);
 
-          const layersToQuery = selectedLayerId ? [selectedLayerId] : Object.keys(FUNDING_LAYERS_MAP);
+          /* A build may supply a prepared funding table. That is the better
+           * source for two reasons. It carries every programme whether or not
+           * that programme is a layer on the map, so filtering to Home Repair or
+           * Homebuyer Assistance still returns figures. And it marks which rows
+           * belong in this chart, which keeps FY2025-2026 on the same
+           * completed-only basis as every earlier year. Summing loan amounts off
+           * the map layer instead mixes completed and pipeline money and makes
+           * the latest year tower over the rest. */
+          const fundingDS = dataSource("fundingByYear");
+          if (fundingDS) {
+            const wanted = selectedLayerId ? FUNDING_LAYERS_MAP[selectedLayerId] : null;
+            const rows = await loadSource("fundingByYear");
+            rows.forEach(r => {
+              if (wanted && r.program !== wanted) return;
+              const fy = r.fiscalYear || "Unknown";
+              if (!byYear[fy]) byYear[fy] = {};
+              byYear[fy].total = (byYear[fy].total || 0) + (Number(r.amount) || 0);
+            });
+          }
+
+          const layersToQuery = fundingDS ? []
+            : (selectedLayerId ? [selectedLayerId] : Object.keys(FUNDING_LAYERS_MAP));
 
           for (const layerId of layersToQuery) {
             const layer = housing[layerId];
@@ -2058,8 +2083,21 @@
           const unitGaps = Object.entries(missingUnits).filter(([, n]) => n > 0)
             .map(([id, n]) => `${n} ${FUNDING_LAYERS_MAP[id].toLowerCase()}`).join(", ");
           const caveatParts = [];
-          if (unitGaps) caveatParts.push(`No Total Units recorded (counted as 0, not excluded): ${unitGaps}.`);
-          caveatParts.push(`The unit totals below reflect only projects with Total Units recorded — they are not a count of all projects, and will undercount true production wherever Total Units is blank.`);
+          if (fundingDS) {
+            /* The basis note Mary asked for on 2026-09-08. Before FY2025-2026 a
+             * project was dated to a fiscal year only once it completed. The
+             * FY2026-FY2030 tracker dates a project when it is funded instead.
+             * Counting the new way would put FY2025-2026 far above every other
+             * year for a reason that is a change of method, not of spending. */
+            caveatParts.push(`Completed projects only, on the same basis as every earlier year. ` +
+              `Before FY 2025-2026 a project was counted in a fiscal year once it was completed; ` +
+              `the current tracker instead dates a project when it is funded. This chart keeps the ` +
+              `older basis so the years can be compared, which means money committed to projects ` +
+              `still in the pipeline is not shown here.`);
+          } else {
+            if (unitGaps) caveatParts.push(`No Total Units recorded (counted as 0, not excluded): ${unitGaps}.`);
+            caveatParts.push(`The unit totals below reflect only projects with Total Units recorded — they are not a count of all projects, and will undercount true production wherever Total Units is blank.`);
+          }
           document.getElementById("fundingCaveat").innerHTML = caveatParts.join(" ");
 
           // Render bar chart (total funding by year)
@@ -2108,7 +2146,7 @@
 
         fundingProjectTypeSel.addEventListener("change", () => renderFundingCharts(fundingProjectTypeSel.value));
         initProjectTypeDropdown();
-        if (housing && housing.housing_development) {
+        if (dataSource("fundingByYear") || (housing && housing.housing_development)) {
           await renderFundingCharts("");
         } else {
           console.warn("Housing layers not yet loaded, charts will render when data is available");

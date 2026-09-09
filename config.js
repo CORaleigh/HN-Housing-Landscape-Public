@@ -174,6 +174,24 @@ export const DATA_SOURCES = {
         Total_Units: Number(r.Total_Units) || 0,
       })),
   },
+  /* Fixes two things the map-layer sum got wrong. Home Repair and Homebuyer
+   * Assistance are not layers on this map, so filtering to either of them
+   * produced an empty chart. And the layer sum counted FY2025-2026 pipeline
+   * money that no earlier year includes, which made the latest bar tower over
+   * the rest for a reason that is a change of method rather than of spending.
+   * Include_In_Chart marks the rows that share the older completed-only basis. */
+  fundingByYear: {
+    url: `${ORG}/HN_Funding_By_Year/FeatureServer/0`,
+    query: "where=1%3D1&outFields=*&orderByFields=Fiscal_Year_End&returnGeometry=false&f=json",
+    adaptRows: (rows) => rows
+      .filter((r) => String(r.Include_In_Chart || "").trim() === "Yes")
+      .map((r) => ({
+        program: r.Program,
+        fiscalYear: r.Fiscal_Year_Label || r.Fiscal_Year,
+        amount: Number(r.City_Funding) || 0,
+        records: Number(r.Records) || 0,
+      })),
+  },
   bondProjects: {
     url: `${ORG}/HN_Bond_Projects/FeatureServer/0`,
     query: "where=1%3D1&outFields=*&returnGeometry=false&f=json",

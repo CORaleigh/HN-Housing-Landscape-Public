@@ -442,4 +442,10 @@ export const DATA_SOURCES = {
     query: "where=1%3D1&outFields=*&returnGeometry=false&f=json",
     adaptRows: null,
   },
+  /* Null on purpose. With no funding table declared, the Total funding by year
+   * chart falls back to summing loan amounts off the map layers, which is what
+   * these builds have always done. A build that has a prepared funding table
+   * declares it here and gets two things the layer sum cannot give: programmes
+   * that are not mapped layers, and a completed-only basis for every year. */
+  fundingByYear: null,
 };
