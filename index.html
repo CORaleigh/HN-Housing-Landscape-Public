@@ -186,7 +186,7 @@
               </div>
             </div>
             <div class="checks" id="fFundingChecks"></div>
-            <div class="note" style="margin-top:6px;">This is only reflective of funding sources for the year 2025-2026. We are working on updating past years in future iterations of the dashboard.</div>
+            <div class="note" id="fundingFilterNote" style="margin-top:6px;">This is only reflective of funding sources for the year 2025-2026. We are working on updating past years in future iterations of the dashboard.</div>
           </div>
           <div class="field">
             <label for="unitMinN">Total units per project</label>
@@ -216,7 +216,7 @@
             <button class="btn secondary" id="resetBtn">Reset filters</button>
           </div>
           <div class="note" id="resultCount" style="margin-top:10px;"></div>
-          <div class="note" style="margin-top:8px;">Filters apply to <strong>all city housing layers</strong>. A layer that lacks a
+          <div class="note" id="filterScopeNote" style="margin-top:8px;">Filters apply to <strong>all city housing layers</strong>. A layer that lacks a
           selected field (e.g. only Development has a development type; Homebuyer Assistance has no status; Other Housing Impact has no AMI data)
           is hidden while that filter is active. Selecting multiple AMI levels shows any project with at least one unit in <strong>any</strong>
           selected band. AMI bands for Housing Development are only populated once a project is <strong>Complete</strong>, so pipeline projects
@@ -1219,8 +1219,22 @@
           }
         });
       }
-      document.getElementById("refNote").textContent =
-        "Connected to City of Raleigh services (maps.raleighnc.gov and Raleigh AGOL).";
+      /* Every one of these strings can be wrong for a build that swapped its
+       * layers, so each is overridable and the default is the original text. */
+      document.getElementById("refNote").textContent = UI.referenceNoteText
+        || "Connected to City of Raleigh services (maps.raleighnc.gov and Raleigh AGOL).";
+      if (UI.fundingFilterNoteHtml !== undefined) {
+        const el = document.getElementById("fundingFilterNote");
+        if (el) { el.innerHTML = UI.fundingFilterNoteHtml; el.hidden = !UI.fundingFilterNoteHtml; }
+      }
+      if (UI.filterScopeNoteHtml !== undefined) {
+        const el = document.getElementById("filterScopeNote");
+        if (el) { el.innerHTML = UI.filterScopeNoteHtml; el.hidden = !UI.filterScopeNoteHtml; }
+      }
+      if (UI.sidebarFooterHtml !== undefined) {
+        const el = document.querySelector(".footer-note");
+        if (el) el.innerHTML = UI.sidebarFooterHtml;
+      }
 
       /* ---- housing layer toggles (with live match-count badges) --------- */
       const ht = document.getElementById("housingToggles");
@@ -2348,11 +2362,11 @@
       }
 
       const updated = (sumRows.map(r => r[SF.dateUpdated]).filter(Boolean).sort().pop()) || "n/a";
-      document.getElementById("footer").innerHTML =
-        `Source: <em>Housing Production Tracker</em> aggregate table (hosted). Completed units exclude pipeline; ` +
-        `pipeline is reported only from FY26 forward (per HCD rules). Latest quarterly update in source: ${updated}. ` +
-        `Mapped-point counts (district panel) are geometry-derived and will not reconcile to this table. ` +
-        `Prototype (V2) — template for staff use, not an approved public release. Brand: City of Raleigh (DesignTeam@raleighnc.gov).`;
+      document.getElementById("footer").innerHTML = UI.footerHtml
+        || (`Source: <em>Housing Production Tracker</em> aggregate table (hosted). Completed units exclude pipeline; ` +
+            `pipeline is reported only from FY26 forward (per HCD rules). Latest quarterly update in source: ${updated}. ` +
+            `Mapped-point counts (district panel) are geometry-derived and will not reconcile to this table. ` +
+            `Prototype (V2) — template for staff use, not an approved public release. Brand: City of Raleigh (DesignTeam@raleighnc.gov).`);
     </script>
   </body>
 </html>

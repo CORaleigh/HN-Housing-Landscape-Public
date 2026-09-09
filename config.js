@@ -255,6 +255,51 @@ export const UI = {
    * layers built by geocoding resident addresses, which this build deliberately
    * does not load. Zeros would have read as "none in any district", which is a
    * claim the data does not support.                                          */
+  /* --- Copy corrected for this build, 9 September 2026 ---------------------
+   * Each of these read as false once the layers changed. Checked against the
+   * services and the four authoritative workbooks.                          */
+
+  /* Was: "only reflective of funding sources for the year 2025-2026". Not true
+   * any more. 55 of the 79 rows carry a named fund, and 16 of those are before
+   * FY2025-2026. What IS still true is that a fund is not named on every older
+   * row, which is a different and much smaller claim. */
+  fundingFilterNoteHtml:
+    "City funding is broken out by fund for every year, not just the current one. " +
+    "Where the source records a single figure without naming a fund, the project " +
+    "will not match any fund filter.",
+
+  /* Was: a note about several city housing layers and which fields each lacks.
+   * This map carries one layer, so the whole comparison described nothing. */
+  filterScopeNoteHtml:
+    "Selecting multiple AMI levels shows any project with at least one unit in " +
+    "<strong>any</strong> selected band. AMI bands are only populated once a project " +
+    "is <strong>Complete</strong>, so pipeline projects will not match an AMI filter.",
+
+  /* Was: "Connected to City of Raleigh services (maps.raleighnc.gov and Raleigh
+   * AGOL)". Two of these reference layers are files served with the page, and
+   * the census layers are Esri's, not the City's. */
+  referenceNoteText:
+    "Council districts and overlay districts are drawn from boundary files published "
+    + "with this page. Transit layers come from the City's ArcGIS Online. Census layers "
+    + "come from Esri's American Community Survey service.",
+
+  /* Was: named the old aggregate tracker and reported a quarterly update date
+   * this build's table does not carry. The prototype wording is left exactly as
+   * it was; changing a disclaimer is not a data decision. */
+  footerHtml:
+    "Sources: HN_Production_By_Year, HN_Funding_By_Year, HN_Development_Projects, "
+    + "HN_Bond_Category_Totals, HN_Bond_By_Fiscal_Year, HN_Bond_Projects and "
+    + "HN_City_Housing_Development, published from the Housing and Community Development "
+    + "Department's and Finance's own records. Completed units exclude pipeline. "
+    + "Mapped point counts are geometry-derived and will not reconcile to the production "
+    + "tables. Prototype (V2) — template for staff use, not an approved public release. "
+    + "Brand: City of Raleigh (DesignTeam@raleighnc.gov).",
+
+  sidebarFooterHtml:
+    "Prototype (V2) — template for staff use, not an approved public release. City "
+    + "housing layer served from the Raleigh ArcGIS Online org; boundary files served "
+    + "with this page. Brand: City of Raleigh. Design review: DesignTeam@raleighnc.gov.",
+
   showNcodFilter: false,
   geographyCountSuffix: "",
   geographyTitleSuffix: "",
