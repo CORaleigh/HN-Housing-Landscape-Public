@@ -198,6 +198,24 @@ export const HOUSING_AUTHORITY_LABELS = {
   "Housing Authority of the County of Wake":  "Wake County Housing Authority",
 };
 
+/* HUD's LIHTC "year placed in service" is a TEXT field carrying two placeholder
+ * codes rather than years, and left raw they read as real dates on the popup:
+ *
+ *   9999  the project has a credit allocation but HUD was never told, or never
+ *         recorded, when it went into service. Walnut Trace is one of these. Its
+ *         credits were allocated in 2018 and HUD's address still reads "ACTUAL
+ *         ADDRESS TO BE ASSIGNED", so the record predates the building and was
+ *         never updated. The city's own layer has it complete since April 2023.
+ *   8888  not applicable to this record.
+ *
+ * Neither is rare: across the North Carolina records, 68 carry 9999 and 46 carry
+ * 8888. Nine of Wake County's 641 carry 9999, every one allocated in 2017-2018.
+ * Anything not listed falls through unchanged, so a real year still shows.     */
+export const YEAR_PLACED_IN_SERVICE_LABELS = {
+  "9999": "Not reported by HUD",
+  "8888": "Not applicable",
+};
+
 export const HUD_LAYERS_BASE = [
   {
     id: "hud_public_housing",
@@ -229,7 +247,7 @@ export const HUD_LAYERS_BASE = [
     url: `${HUD_BASE}/LIHTC/FeatureServer/0`,
     where: "PROJ_ST='NC' AND CURCNTY_NM LIKE 'Wake%'", style: "triangle", color: "#FBAE40",
     name: ["PROJECT"], addr: ["PROJ_ADD", "PROJ_CTY"], units: null,
-    extra: [["Year placed in service", "YR_PIS"]],
+    extra: [["Year placed in service", "YR_PIS", YEAR_PLACED_IN_SERVICE_LABELS]],
     visible: false,
   },
   {
