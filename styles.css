@@ -355,6 +355,15 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
 .card .chart-box { position: relative; width: 100%; height: 280px; }
 .card.wide { grid-column: 1 / -1; }
 
+/* A chart with its counters beside it rather than stacked above. The chart takes
+   the room it needs to stay readable; the counters take a fixed, narrower column
+   and stack one on top of the other. Collapses back to one column on narrow
+   screens, where side by side would squeeze both. */
+.split-chart-kpis { display: grid; grid-template-columns: minmax(0, 2fr) minmax(190px, 0.8fr); gap: 20px; align-items: start; }
+.split-chart-kpis .kpi-row { margin-bottom: 0; }
+.kpi-stack { grid-template-columns: 1fr; }
+@media (max-width: 760px) { .split-chart-kpis { grid-template-columns: 1fr; } }
+
 /* Dashboard data table (yearly + total sums) */
 .data-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
 .data-table th, .data-table td { padding: 6px 8px; border-bottom: 1px solid var(--light-fill); text-align: right; white-space: nowrap; }

@@ -466,25 +466,31 @@
       <h2 style="color:var(--raleigh-green);font-size:1.15rem;margin:26px 0 4px;">Development projects <span id="bondDevScope" class="status-badge status-badge-live">complete &amp; pipeline</span></h2>
       <div><span class="src-badge">Source: 2020 Bond Tracker (f_2020_Bond_Tracker_Housing_Development_2020) — PPP, LIHTC Gap Financing and Site Acquisition only</span></div>
 
+      <!-- Removed 2026-08-17: "units by status" (pipeline v complete) and
+           "units (cumulative)". Category is the one chart kept here.
+           2026-09-09: the two counters used to sit in a full-width card of their
+           own above the pie, which left a wide empty band and a lopsided chart.
+           They now sit beside the pie. Each column keeps its OWN explanation,
+           because the two do not share a scope: the counters follow the status
+           filter and the pie deliberately does not. -->
       <div class="card-grid" style="margin-top:12px;">
         <div class="card bond wide">
-          <h4>2020 Bond housing development summary</h4>
-          <!-- Sits inside the card it describes, so it stays with the content on
-               both builds instead of being stripped as a section banner. -->
-          <div class="caveat card-note" id="bondDevCaveat" style="margin-top:0;margin-bottom:10px;"></div>
-          <div class="kpi-row" id="bondDevKpis" style="margin-top:6px;"></div>
-        </div>
-      </div>
-      <!-- Removed 2026-08-17: "units by status" (pipeline v complete) and
-           "units (cumulative)". Category is the one chart kept here. -->
-      <div class="card-grid">
-        <div class="card">
           <h4>2020 Bond housing development units by category</h4>
-          <div class="chart-box"><canvas id="bondDevByCategory"></canvas></div>
-          <!-- Units come from the Bond 2020 Totals table rather than the project
-               rows, so the Grosvenor single-count rule is applied. Populated by
-               renderBondDev(). -->
-          <div class="note" id="bondDevUnitsNote" style="margin-top:8px;"></div>
+          <div class="split-chart-kpis">
+            <div>
+              <div class="chart-box"><canvas id="bondDevByCategory"></canvas></div>
+              <!-- Units come from the Bond 2020 Totals table rather than the project
+                   rows, so the Grosvenor single-count rule is applied. Populated by
+                   renderBondDev(). -->
+              <div class="note" id="bondDevUnitsNote" style="margin-top:8px;"></div>
+            </div>
+            <div>
+              <div class="kpi-row kpi-stack" id="bondDevKpis"></div>
+              <!-- Sits with the counters it describes, so it stays with the content
+                   on every build instead of being stripped as a section banner. -->
+              <div class="caveat card-note" id="bondDevCaveat" style="margin-top:10px;"></div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="card-grid">
