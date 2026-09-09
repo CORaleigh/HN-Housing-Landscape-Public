@@ -386,8 +386,10 @@
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 6px;">
         <label for="distSel" style="font-weight:600;font-size:.85rem;">Council district</label>
         <select id="distSel" style="padding:7px 8px;font:inherit;font-size:.85rem;border:1px solid var(--border);border-radius:4px;"><option value="">All districts</option></select>
-        <label for="ncodSel" style="font-weight:600;font-size:.85rem;">NCOD overlay</label>
-        <select id="ncodSel" style="padding:7px 8px;font:inherit;font-size:.85rem;border:1px solid var(--border);border-radius:4px;"><option value="">All areas</option></select>
+        <span id="ncodControl" style="display:contents;">
+          <label for="ncodSel" style="font-weight:600;font-size:.85rem;">NCOD overlay</label>
+          <select id="ncodSel" style="padding:7px 8px;font:inherit;font-size:.85rem;border:1px solid var(--border);border-radius:4px;"><option value="">All areas</option></select>
+        </span>
       </div>
       <div class="caveat" id="distCaveat">
         Derived from the <strong>mapped point layers</strong> (geometry), not the aggregate tracker. These counts include
@@ -406,6 +408,7 @@
       <div class="card wide">
         <h3 id="distChartTitle">Units by district and program</h3>
         <div class="chart-box"><canvas id="distChart"></canvas></div>
+        <div class="note" id="distScopeNote" hidden></div>
       </div>
       </div>
 
@@ -1814,7 +1817,15 @@
           summaryFields: ["Homeowner_Rehabs"] },
         { id: "homebuyer_assistance",label: "Homebuyer assistance", F: HBA_FIELDS,   color: BRAND.navy,
           summaryFields: ["Homebuyer_Assistance"] },
-      ];
+      ].filter(p => {
+        /* A programme with no layer on this build has no district data at all,
+         * and drawing it as a zero series reads as "none in any district",
+         * which is a claim the data does not make. Leave it out and say so in
+         * the note under the chart instead. */
+        if (housing[p.id]) return true;
+        console.info("Geography section: no layer for " + p.id + ", omitted rather than shown as zero");
+        return false;
+      });
       const records = [];
       const untagged = {};        // records with no council district (excluded below)
       const untaggedUnits = {};   // units those excluded records carried
@@ -1847,6 +1858,21 @@
         });
       }
       const distSel = document.getElementById("distSel");
+      /* NCOD is a neighbourhood overlay name, which comes from a spatial join
+       * rather than from any source file. A build whose layer does not carry it
+       * would offer a filter with nothing in it. */
+      if (UI.showNcodFilter === false) {
+        const ncodControl = document.getElementById("ncodControl");
+        /* Set display directly. The wrapper carries an inline display:contents so
+         * its label and select stay in the parent flex row, and an inline style
+         * beats the hidden attribute's stylesheet rule. */
+        if (ncodControl) ncodControl.style.display = "none";
+      }
+      const scopeNoteEl = document.getElementById("distScopeNote");
+      if (scopeNoteEl && UI.geographyScopeNoteHtml) {
+        scopeNoteEl.innerHTML = UI.geographyScopeNoteHtml;
+        scopeNoteEl.hidden = false;
+      }
       const ncodSel = document.getElementById("ncodSel");
       const distValues = [...new Set(records.map(r => r.district))].sort();
       const ncodValues = [...new Set(records.map(r => r.ncod).filter(Boolean))].sort();
@@ -1864,16 +1890,22 @@
         /* Every tile is mapped-point derived and includes pipeline, so each is
          * labelled "(mapped)" — the tiles are read on their own, away from the
          * caveat above, and were being mistaken for the citywide totals.       */
-        const kpi = [["Total units (mapped)", rows2.reduce((s, r) => s + r.units, 0)],
-                     ...PROGRAMS.map(p => [`${p.label} (mapped)`, unitsOf(p.id)])];
+        /* "(mapped)" tells the reader these are point counts rather than the
+         * tracker's reported totals. A build that carries one programme has no
+         * such contrast to draw, so UI.geographyCountSuffix empties it. */
+        const mSuffix = (UI.geographyCountSuffix === undefined) ? " (mapped)" : UI.geographyCountSuffix;
+        const kpi = [[`Total units${mSuffix}`, rows2.reduce((s, r) => s + r.units, 0)],
+                     ...PROGRAMS.map(p => [`${p.label}${mSuffix}`, unitsOf(p.id)])];
         document.getElementById("distKpis").innerHTML = kpi.map(([l, v]) =>
           `<div class="kpi"><div class="num">${v.toLocaleString()}</div><div class="lbl">${l}</div></div>`).join("");
 
+        const tSuffix = (UI.geographyTitleSuffix === undefined) ? " (mapped points)" : UI.geographyTitleSuffix;
+        const byYear2 = () => [...new Set(rows2.map(r => r.fiscalYear).filter(Boolean))].sort();
         let labels2, title;
-        if (!dist && !ncod) { labels2 = distValues; title = "Units by district and program (mapped points)"; }
-        else if (dist && !ncod) { labels2 = [...new Set(rows2.map(r => r.fiscalYear).filter(Boolean))].sort(); title = `${dist}: units by fiscal year and program (mapped points)`; }
-        else if (!dist && ncod) { labels2 = [...new Set(rows2.map(r => r.fiscalYear).filter(Boolean))].sort(); title = `${ncod}: units by fiscal year and program (mapped points)`; }
-        else { labels2 = [...new Set(rows2.map(r => r.fiscalYear).filter(Boolean))].sort(); title = `${dist}, ${ncod}: units by fiscal year and program (mapped points)`; }
+        if (!dist && !ncod) { labels2 = distValues; title = `Units by district and program${tSuffix}`; }
+        else if (dist && !ncod) { labels2 = byYear2(); title = `${dist}: units by fiscal year and program${tSuffix}`; }
+        else if (!dist && ncod) { labels2 = byYear2(); title = `${ncod}: units by fiscal year and program${tSuffix}`; }
+        else { labels2 = byYear2(); title = `${dist}, ${ncod}: units by fiscal year and program${tSuffix}`; }
         const datasets = PROGRAMS.map(p => ({
           label: p.label, backgroundColor: p.color,
           data: labels2.map(lbl => rows2.filter(r => r.program === p.id && (!dist && !ncod ? r.district === lbl : r.fiscalYear === lbl)).reduce((s, r) => s + r.units, 0)),

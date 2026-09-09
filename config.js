@@ -234,4 +234,34 @@ export const UI = {
     'production totals in the charts below.',
 
   deidNote: "",
+
+  /* --- City housing by geography ------------------------------------------
+   * Three things, all consequences of this build mapping one layer.
+   *
+   * The NCOD overlay filter is off. A neighbourhood overlay name is a spatial
+   * join result rather than anything a source records, so this layer has no such
+   * field and the filter offered a single empty option.
+   *
+   * "(mapped)" is dropped from the tile labels and the chart title. It was there
+   * to warn that these were point counts rather than the tracker's reported
+   * totals, a contrast that only makes sense when several programmes are drawn
+   * side by side.
+   *
+   * Home Repair, Homebuyer Assistance and Other Housing Impact are omitted
+   * rather than drawn as zero. Checked on 9 September 2026: no council district
+   * is recorded for them anywhere in the four authoritative workbooks. The one
+   * district column that exists, on the FY26-FY30 Homeowner Repair tab, is empty
+   * on all 144 rows. The older dashboard filled this in from de-identified point
+   * layers built by geocoding resident addresses, which this build deliberately
+   * does not load. Zeros would have read as "none in any district", which is a
+   * claim the data does not support.                                          */
+  showNcodFilter: false,
+  geographyCountSuffix: "",
+  geographyTitleSuffix: "",
+  geographyScopeNoteHtml:
+    "<strong>City housing development only.</strong> Home repair, homebuyer assistance and " +
+    "other housing impact are not shown here because no council district is recorded for them " +
+    "in the department's source data. Their citywide totals appear in the Housing production " +
+    "section above. Counts here include both completed and pipeline units, so they will not " +
+    "match those citywide totals.",
 };
