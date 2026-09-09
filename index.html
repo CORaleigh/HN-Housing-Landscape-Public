@@ -349,6 +349,17 @@
         </div>
       </div>
 
+
+      <!-- Project-level companion to the table above, mirroring the Pipeline
+           projects table so the two read the same way. Populated from the same
+           development-layer query that builds the pipeline table further down,
+           so DOM order and code order differ on purpose. -->
+      <div class="card wide" style="margin-top:18px;">
+        <h3 style="margin:0 0 12px 0;">Completed city housing development projects</h3>
+        <div class="table-scroll" style="max-height:280px;overflow-x:auto;"><table class="data-table" id="completedTable"></table></div>
+        <div class="note" id="completedTableNote" style="margin-top:10px;"></div>
+      </div>
+
       <h2 style="color:var(--raleigh-green);font-size:1.15rem;margin:30px 0 4px;border-top:1px solid var(--border);padding-top:20px;">Affordability and funding</h2>
       <div><span class="src-badge">Source: City Housing Development, Home Repair, and Homebuyer Assistance layers (Funding Source, Total Units, City of Raleigh Loan Amount, AMI bands)</span></div>
       <div class="caveat" id="fundingCaveat" style="margin-top:8px;"></div>
@@ -2257,6 +2268,52 @@
           <div class="kpi"><div class="num">${pctPipeline.toFixed(1)}%</div><div class="lbl">Of all units are in the pipeline</div></div>
           <div class="kpi"><div class="num">${totalUnitsPipeline.toLocaleString()}</div><div class="lbl">Total pipeline units</div></div>
           <div class="kpi"><div class="num">${pipelineRows.length.toLocaleString()}</div><div class="lbl">Pipeline projects</div></div>`;
+
+        /* Completed projects, the companion to the pipeline table below. Same
+         * columns and same sort, so the two can be read against each other.
+         * Development only: the section it sits under also covers home repair,
+         * homebuyer assistance and other housing impact, and none of those is
+         * recorded project by project in the source. */
+        const completedRows = allRows.filter(a => clean(a[F.projectStatus]) === "Complete");
+        const rowCells = (a) => `
+              <tr>
+                <td style="text-align:left;">${clean(a[F.fiscalYear]) || "—"}</td>
+                <td style="text-align:left;">${clean(a[F.project]) || "—"}</td>
+                <td>${fmtNum(a[F.totalUnits])}</td>
+                <td style="text-align:left;">${clean(a[F.population]) || "—"}</td>
+                <td style="text-align:left;">${clean(a[F.fundingSource]) || "—"}</td>
+                <td style="text-align:left;">${clean(a[F.developmentType]) || "—"}</td>
+              </tr>`;
+        const byYearThenName = (a, b) => {
+          const fa = clean(a[F.fiscalYear]) || "", fb = clean(b[F.fiscalYear]) || "";
+          if (fa !== fb) return fa.localeCompare(fb);
+          return (clean(a[F.project]) || "").localeCompare(clean(b[F.project]) || "");
+        };
+        const projectTableHead = `
+          <thead><tr>
+            <th style="text-align:left;">Fiscal Year</th>
+            <th style="text-align:left;">Project</th>
+            <th>Total Units</th>
+            <th style="text-align:left;">Population</th>
+            <th style="text-align:left;">Funding Source</th>
+            <th style="text-align:left;">Development Type</th>
+          </tr></thead>`;
+        const completedTableEl = document.getElementById("completedTable");
+        if (completedTableEl) {
+          const sortedCompleted = completedRows.slice().sort(byYearThenName);
+          const completedUnits = sortedCompleted.reduce((t, a) => t + (num(a[F.totalUnits]) || 0), 0);
+          completedTableEl.innerHTML = projectTableHead + `<tbody>${sortedCompleted.map(rowCells).join("")}</tbody>`;
+          const noteEl = document.getElementById("completedTableNote");
+          if (noteEl) {
+            noteEl.innerHTML =
+              `<strong>${sortedCompleted.length.toLocaleString()} completed development projects, ` +
+              `${completedUnits.toLocaleString()} units.</strong> City housing development only. The ` +
+              `table above also covers home repair, homebuyer assistance and other housing impact, ` +
+              `none of which the source records project by project. Units here are the whole ` +
+              `development, so this total will not match the development figures above, which count ` +
+              `only the units the department reports as produced in each year.`;
+          }
+        }
 
         // Pipeline projects table
         const sortedPipeline = pipelineRows.slice().sort((a, b) => {
