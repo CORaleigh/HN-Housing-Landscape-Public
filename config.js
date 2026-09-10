@@ -68,14 +68,18 @@ export const HOUSING_LAYERS = [DEV_LAYER];
 export const DEV_FIELDS = {
   ...DEV_FIELDS_BASE,
   ncod: null,
+  /* DAHF is not listed. Housing confirmed on 9 September 2026 that DAHF and Penny
+   * are the same source, so the money is all in Penny_736 and a separate DAHF row
+   * would show one fund twice under two names. The field still exists on the
+   * service, always empty, so the schema does not shift under anything reading it.
+   * The label carries both names so a reader looking for DAHF finds it.        */
   fundingAmounts: [
-    ["Penny_736",          "Penny for Housing (736)"],
+    ["Penny_736",          "Penny for Housing / DAHF (736)"],
     ["Program_Income_724", "Program Income (724)"],
     ["Bond_2020_726",      "2020 Bond (726)"],
     ["Bond_Prior_To_2020", "Earlier housing bond"],
     ["HOME_751",           "HOME (751)"],
     ["CDBG",               "CDBG"],
-    ["DAHF",               "Dedicated Affordable Housing Fund (DAHF)"],
     ["Other",              "Other"],
     ["Unspecified",        "Fund not recorded in the source"],
   ],
@@ -84,14 +88,16 @@ export const DEV_FIELDS = {
 /* Map filter. `values` still matches the Funding_Source text where a layer
  * carries one, but on this layer the amount columns are the reliable test.     */
 export const FUNDING_SOURCES = [
-  { label: "Penny for Housing",  field: "Penny_736",          values: [] },
-  { label: "Program Income",     field: "Program_Income_724", values: [] },
-  { label: "2020 Bond",          field: "Bond_2020_726",      values: ["2020 Bond"] },
-  { label: "Earlier bond",       field: "Bond_Prior_To_2020", values: [] },
-  { label: "HOME",               field: "HOME_751",           values: ["HOME"] },
-  { label: "CDBG",               field: "CDBG",               values: ["Community Development Block Grant (CDBG)"] },
-  { label: "DAHF",               field: "DAHF",               values: ["Dedicated Affordable Housing Fund (DAHF)"] },
-  { label: "Other",              field: "Other",              values: ["Other"] },
+  /* One entry per real fund. DAHF folds into Penny, per Housing on 9 September
+   * 2026, so filtering on Penny returns the DAHF-funded projects too. A separate
+   * DAHF filter would have matched nothing. */
+  { label: "Penny for Housing / DAHF", field: "Penny_736",          values: ["Dedicated Affordable Housing Fund (DAHF)"] },
+  { label: "Program Income",           field: "Program_Income_724", values: [] },
+  { label: "2020 Bond",                field: "Bond_2020_726",      values: ["2020 Bond"] },
+  { label: "Earlier bond",             field: "Bond_Prior_To_2020", values: [] },
+  { label: "HOME",                     field: "HOME_751",           values: ["HOME"] },
+  { label: "CDBG",                     field: "CDBG",               values: ["Community Development Block Grant (CDBG)"] },
+  { label: "Other",                    field: "Other",              values: ["Other"] },
 ];
 
 /* --- Production summary ----------------------------------------------------- *
