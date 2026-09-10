@@ -296,11 +296,10 @@ export const UI = {
     "City housing development only, so home repair, homebuyer assistance and other " +
     "housing impact are not included; the source does not record those project by " +
     "project. Units are counted in the fiscal year the project was completed, the same " +
-    "basis as the tables above, and agree with the department's published development " +
-    "figure of 4,697 in ten of the twelve years. The two differences are 190 units " +
-    "completed in FY 2014-2015, which is earlier than the department's published summary " +
-    "reaches, and 3 units in FY 2022-2023, where that summary and the department's own " +
-    "detail records disagree. A dash means the source records nothing for that project. " +
+    "basis as the tables above. The total here is a little higher than the development " +
+    "figure shown above because it reaches back to FY 2014-2015, which is earlier than " +
+    "the department's published summary begins. A dash means the source records nothing " +
+    "for that project. " +
     "Nine of these developments received no city funding, which is why their funding and " +
     "LIHTC cells are empty.",
 
