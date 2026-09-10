@@ -276,11 +276,14 @@ export const UI = {
 
   /* Was: a note about several city housing layers and which fields each lacks.
    * This map carries one layer, so the whole comparison described nothing. */
-  filterScopeNoteHtml:
-    "Selecting multiple AMI levels shows any project with at least one unit in " +
-    "<strong>any</strong> selected band. A development's AMI breakdown is only published " +
-    "once the project is <strong>Complete</strong>, so an AMI filter returns completed " +
-    "projects only.",
+  /* Empty, which hides the note. Everything it said was about the AMI band
+   * filter, and that filter is switched off on this build, so the note described
+   * a control that is not on the page. Restore it alongside showAmiFilter:
+   *   "Selecting multiple AMI levels shows any project with at least one unit in
+   *    <strong>any</strong> selected band. A development's AMI breakdown is only
+   *    published once the project is <strong>Complete</strong>, so an AMI filter
+   *    returns completed projects only."                                       */
+  filterScopeNoteHtml: "",
 
   /* Was: "Connected to City of Raleigh services (maps.raleighnc.gov and Raleigh
    * AGOL)". Two of these reference layers are files served with the page, and
