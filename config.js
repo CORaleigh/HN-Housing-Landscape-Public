@@ -296,12 +296,10 @@ export const UI = {
     "City housing development only, so home repair, homebuyer assistance and other " +
     "housing impact are not included; the source does not record those project by " +
     "project. Units are counted in the fiscal year the project was completed, the same " +
-    "basis as the tables above. The total here is a little higher than the development " +
-    "figure shown above because it reaches back to FY 2014-2015, which is earlier than " +
-    "the department's published summary begins. A dash means the source records nothing " +
-    "for that project. " +
-    "Nine of these developments received no city funding, which is why their funding and " +
-    "LIHTC cells are empty.",
+    "basis as the tables above, and the total matches the department's own published " +
+    "development figure. A dash under Population means the department's records hold no " +
+    "population for that project, which is the case for five developments that received " +
+    "no city funding.",
 
   /* Was: "Connected to City of Raleigh services (maps.raleighnc.gov and Raleigh
    * AGOL)". Two of these reference layers are files served with the page, and
@@ -346,6 +344,23 @@ export const UI = {
   showLihtcFilter: false,
   showAffordabilitySection: false,
   showGeographySection: false,
+
+  /* --- Samantha, 10 September 2026 ----------------------------------------
+   * FY 2014-2015 comes off the fiscal year filter and off the map. Those three
+   * projects, Rich Park, Brighton Pointe and Sunnybrook I, carry no city
+   * funding, no LIHTC classification and, in Rich Park's case, a certificate of
+   * occupancy dated December 2012, which is two years before the fiscal year it
+   * is filed under. Filtered, not deleted: the rows stay in the layer and in the
+   * workbook, and one line here brings the year back.
+   *
+   * A useful side effect. The completed table now reaches exactly as far back as
+   * the department's published summary does, so its total lands on 4,697, the
+   * department's own development figure, with nothing left to explain. */
+  hideFiscalYears: ["FY 2014-2015"],
+
+  /* Funding source and LIHTC come off the completed table, also at Samantha's
+   * request. Both are still in the layer, the popup and the workbook. */
+  completedTableHideColumns: ["fundingSource", "developmentType"],
 
   showNcodFilter: false,
   geographyCountSuffix: "",

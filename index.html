@@ -537,6 +537,23 @@
        * is driven from the UI object rather than from scattered MODE checks.  */
       document.body.dataset.mode = MODE;
 
+      /* Years a build chooses not to show. Nothing is deleted: the rows stay in
+       * the layer and in the workbook, and this is a filter that every read of
+       * the development layer applies, so the map, the counts, the dropdown and
+       * the tables all agree. Samantha asked for FY 2014-2015 to come off on
+       * 10 September 2026; those three projects carry no city funding, no LIHTC
+       * classification and a certificate of occupancy predating the year they
+       * are filed under. */
+      const HIDDEN_YEARS = (UI.hideFiscalYears || []).map(String);
+      const YEAR_CLAUSE = HIDDEN_YEARS.length
+        ? HIDDEN_YEARS.map(y => `${DEV_FIELDS.fiscalYear} <> '${y.replace(/'/g, "''")}'`).join(" AND ")
+        : "";
+      const withYearClause = (where) => {
+        if (!YEAR_CLAUSE) return where || "1=1";
+        return where && where !== "1=1" ? `(${where}) AND ${YEAR_CLAUSE}` : YEAR_CLAUSE;
+      };
+      const yearHidden = (v) => HIDDEN_YEARS.indexOf(String(v || "").trim()) !== -1;
+
       /* Fetch a source declared in DATA_SOURCES and hand back plain attribute
        * rows. A build whose table is shaped differently supplies `adaptRows`,
        * which reshapes here so every chart below stays untouched. `fallbackUrl`
@@ -1328,6 +1345,7 @@
       await Promise.all(HOUSING_LAYERS.map(c => housing[c.id].load()));
       // Only publish through FY26 (ending June 30, 2026); hide FY27+ from the year filter.
       const publishedYears = (await unionDistinct("year")).filter(y => {
+        if (yearHidden(y)) return false;
         const end = parseInt(String(y).split("-")[1], 10);
         return !end || end <= 2026;
       });
@@ -1452,7 +1470,9 @@
               }
             }
           }
-          layer.definitionExpression = clauses.length ? clauses.join(" AND ") : "1=1";
+          layer.definitionExpression = cfg.kind === "dev"
+            ? withYearClause(clauses.length ? clauses.join(" AND ") : "1=1")
+            : (clauses.length ? clauses.join(" AND ") : "1=1");
           // A layer that isn't drawn contributes nothing to the "shown on the map"
           // count, however its toggle/eligibility evaluates.
           const show = toggleState[cfg.id] && eligible && cfg.showOnMap !== false;
@@ -2301,6 +2321,7 @@
         q.outFields = [F.project, F.fiscalYear, F.totalUnits, F.unitsCounted, F.population,
                        F.fundingSource, F.developmentType, F.status, F.projectStatus].filter(Boolean);
 
+        q.where = withYearClause(q.where);
         const res = await devLayer.queryFeatures(q);
         const allRows = res.features.map(f => f.attributes);
         console.log("Housing pipeline - total dev records:", allRows.length);
@@ -2346,14 +2367,20 @@
          * units. The pipeline table keeps total size, which is the right figure
          * for something not yet built. */
         const unitsField = F.unitsCounted || F.totalUnits;
+        /* Columns a build chooses not to show on the completed table. Hidden,
+         * not dropped from the data: Samantha asked for funding source and LIHTC
+         * to come off on 10 September 2026, and both are still in the layer, the
+         * popup and the workbook. */
+        const HIDE_COLS = UI.completedTableHideColumns || [];
+        const showCol = (k) => HIDE_COLS.indexOf(k) === -1;
         const rowCells = (a) => `
               <tr>
                 <td style="text-align:left;">${clean(a[F.fiscalYear]) || "—"}</td>
                 <td style="text-align:left;">${clean(a[F.project]) || "—"}</td>
                 <td>${fmtNum(a[unitsField])}</td>
                 <td style="text-align:left;">${clean(a[F.population]) || "—"}</td>
-                <td style="text-align:left;">${clean(a[F.fundingSource]) || "—"}</td>
-                <td style="text-align:left;">${clean(a[F.developmentType]) || "—"}</td>
+                ${showCol("fundingSource") ? `<td style="text-align:left;">${clean(a[F.fundingSource]) || "—"}</td>` : ""}
+                ${showCol("developmentType") ? `<td style="text-align:left;">${clean(a[F.developmentType]) || "—"}</td>` : ""}
               </tr>`;
         /* Newest fiscal year first, so the most recent completions are the first
          * thing in view rather than eleven years down a scrolling table.
@@ -2369,8 +2396,8 @@
             <th style="text-align:left;">Project</th>
             <th>Units completed</th>
             <th style="text-align:left;">Population</th>
-            <th style="text-align:left;">Funding Source</th>
-            <th style="text-align:left;">Development Type</th>
+            ${showCol("fundingSource") ? `<th style="text-align:left;">Funding Source</th>` : ""}
+            ${showCol("developmentType") ? `<th style="text-align:left;">Development Type</th>` : ""}
           </tr></thead>`;
         const completedTableEl = document.getElementById("completedTable");
         if (completedTableEl) {
