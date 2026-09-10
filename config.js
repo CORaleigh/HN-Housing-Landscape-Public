@@ -278,8 +278,9 @@ export const UI = {
    * This map carries one layer, so the whole comparison described nothing. */
   filterScopeNoteHtml:
     "Selecting multiple AMI levels shows any project with at least one unit in " +
-    "<strong>any</strong> selected band. AMI bands are only populated once a project " +
-    "is <strong>Complete</strong>, so pipeline projects will not match an AMI filter.",
+    "<strong>any</strong> selected band. A development's AMI breakdown is only published " +
+    "once the project is <strong>Complete</strong>, so an AMI filter returns completed " +
+    "projects only.",
 
   /* Was: "Connected to City of Raleigh services (maps.raleighnc.gov and Raleigh
    * AGOL)". Two of these reference layers are files served with the page, and

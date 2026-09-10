@@ -219,8 +219,8 @@
           <div class="note" id="filterScopeNote" style="margin-top:8px;">Filters apply to <strong>all city housing layers</strong>. A layer that lacks a
           selected field (e.g. only Development has a development type; Homebuyer Assistance has no status; Other Housing Impact has no AMI data)
           is hidden while that filter is active. Selecting multiple AMI levels shows any project with at least one unit in <strong>any</strong>
-          selected band. AMI bands for Housing Development are only populated once a project is <strong>Complete</strong>, so pipeline projects
-          will not match an AMI filter.</div>
+          selected band. A development's AMI breakdown is only published once the project is <strong>Complete</strong>, so an AMI
+          filter returns completed projects only.</div>
         </div>
 
         <div class="panel-section">
@@ -1429,7 +1429,20 @@
           }
           if (eligible && amiChecked.length) {
             if (!map.ami) eligible = false;   // layer has no AMI band fields → hide + N/A
-            else clauses.push("(" + amiChecked.map(i => `${map.ami[i]} > 0`).join(" OR ") + ")");
+            else {
+              clauses.push("(" + amiChecked.map(i => `${map.ami[i]} > 0`).join(" OR ") + ")");
+              /* The popup withholds a development's AMI breakdown until the
+               * project is complete, per HCD, and says so in as many words. The
+               * filter has to withhold it too. The band fields ARE populated on
+               * pipeline projects, so without this a search for 40% AMI returns
+               * a pipeline project and thereby discloses the very breakdown the
+               * popup has just promised for later. Gated on the same flag the
+               * popup uses, so the internal build, which does show pipeline
+               * financials, still filters across everything. */
+              if (!UI.showPipelineFinancials && cfg.kind === "dev" && map.status) {
+                clauses.push(`${map.status} = 'Complete'`);
+              }
+            }
           }
           layer.definitionExpression = clauses.length ? clauses.join(" AND ") : "1=1";
           // A layer that isn't drawn contributes nothing to the "shown on the map"
