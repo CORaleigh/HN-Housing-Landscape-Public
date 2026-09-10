@@ -175,7 +175,7 @@
           <div class="field">
             <!-- The Any/All buttons sit on the label row so they read as belonging
                  to this filter specifically, not to the panel as a whole. -->
-            <div class="field-head">
+            <div class="field-head" id="fFundingHead">
               <label id="fFundingLabel">City funding source</label>
               <span class="seg-caption">match</span>
               <div class="seg" id="fFundingMode" role="group" aria-labelledby="fFundingLabel">
@@ -203,8 +203,8 @@
             </div>
             <div class="range-label" id="unitLabel"></div>
           </div>
-          <div class="field"><label for="fDevType">LIHTC</label><select id="fDevType"><option value="">Any</option></select></div>
-          <div class="field">
+          <div class="field" id="fDevTypeField"><label for="fDevType">LIHTC</label><select id="fDevType"><option value="">Any</option></select></div>
+          <div class="field" id="fAmiField">
             <label>AMI level (project has ≥1 unit in the selected band(s))</label>
             <div class="checks" id="fAmiChecks"></div>
           </div>
@@ -223,6 +223,22 @@
           filter returns completed projects only.</div>
         </div>
 
+      <!-- Moved above the HUD filters on 9 September 2026, per Samantha. -->
+        <div class="panel-section">
+          <h2>Legend</h2>
+          <div class="legend-item"><span class="swatch" style="background:#0D6937"></span> Completed City development</div>
+          <div class="legend-item"><span class="swatch" style="background:#FBAE40"></span> In pipeline (pre / under construction)</div>
+          <div class="legend-item" style="margin-top:6px;color:#666;font-size:.78rem;">Development marker size ∝ total units</div>
+          <div id="legendResident">
+            <div class="legend-item" style="margin-top:8px;"><span class="swatch" style="background:#4C8C40;width:9px;height:9px;"></span> Other housing impact (approx.)</div>
+            <div class="legend-item"><span class="swatch" style="background:#189ABC;width:9px;height:9px;"></span> Homeowner rehab (approx.)</div>
+            <div class="legend-item"><span class="swatch" style="background:#01426A;width:9px;height:9px;"></span> Homebuyer assistance (approx.)</div>
+          </div>
+          <div class="legend-item" style="margin-top:8px;"><span style="color:#01426A;font-size:1rem;">■</span> HUD Public Housing properties</div>
+          <div class="legend-item"><span style="color:#189ABC;font-size:1rem;">◆</span> Multifamily Assisted (Section 8, 202, 811)</div>
+          <div class="legend-item"><span style="color:#FBAE40;font-size:1rem;">▲</span> Low Income Housing Tax Credit properties (LIHTC)</div>
+          <div class="legend-item"><span style="color:#99bbff;font-size:1rem;">✕</span> HUD-Insured Multifamily</div>
+        </div>
         <div class="panel-section">
           <h2>Subsidized / HUD housing</h2>
           <div class="checks" id="hudToggles"></div>
@@ -244,21 +260,6 @@
           <div class="note" id="refNote"></div>
         </div>
 
-        <div class="panel-section">
-          <h2>Legend</h2>
-          <div class="legend-item"><span class="swatch" style="background:#0D6937"></span> Completed City development</div>
-          <div class="legend-item"><span class="swatch" style="background:#FBAE40"></span> In pipeline (pre / under construction)</div>
-          <div class="legend-item" style="margin-top:6px;color:#666;font-size:.78rem;">Development marker size ∝ total units</div>
-          <div id="legendResident">
-            <div class="legend-item" style="margin-top:8px;"><span class="swatch" style="background:#4C8C40;width:9px;height:9px;"></span> Other housing impact (approx.)</div>
-            <div class="legend-item"><span class="swatch" style="background:#189ABC;width:9px;height:9px;"></span> Homeowner rehab (approx.)</div>
-            <div class="legend-item"><span class="swatch" style="background:#01426A;width:9px;height:9px;"></span> Homebuyer assistance (approx.)</div>
-          </div>
-          <div class="legend-item" style="margin-top:8px;"><span style="color:#01426A;font-size:1rem;">■</span> HUD Public Housing properties</div>
-          <div class="legend-item"><span style="color:#189ABC;font-size:1rem;">◆</span> Multifamily Assisted (Section 8, 202, 811)</div>
-          <div class="legend-item"><span style="color:#FBAE40;font-size:1rem;">▲</span> Low Income Housing Tax Credit properties (LIHTC)</div>
-          <div class="legend-item"><span style="color:#99bbff;font-size:1rem;">✕</span> HUD-Insured Multifamily</div>
-        </div>
 
         <div class="panel-section" id="dataNotes">
           <h2>Data notes</h2>
@@ -360,6 +361,10 @@
         <div class="note" id="completedTableNote" style="margin-top:10px;"></div>
       </div>
 
+      <!-- Wrapped so a build can drop the whole section without editing
+           markup. Hidden, not deleted: Samantha asked for these to come
+           back once the Rental Development Tracker is reconciled. -->
+      <div id="affordabilitySection">
       <h2 style="color:var(--raleigh-green);font-size:1.15rem;margin:30px 0 4px;border-top:1px solid var(--border);padding-top:20px;">Affordability and funding</h2>
       <div><span class="src-badge">Source: City Housing Development, Home Repair, and Homebuyer Assistance layers (Funding Source, Total Units, City of Raleigh Loan Amount, AMI bands)</span></div>
       <div class="caveat" id="fundingCaveat" style="margin-top:8px;"></div>
@@ -379,6 +384,7 @@
         </div>
       </div>
 
+      </div><!-- /affordabilitySection -->
       <h2 style="color:var(--raleigh-green);font-size:1.15rem;margin:30px 0 4px;border-top:1px solid var(--border);padding-top:20px;">Housing pipeline</h2>
       <div><span class="src-badge">Source: City Housing Development layer (Project_Status = Pipeline)</span></div>
       <div class="caveat" id="pipelineCaveat" style="margin-top:8px;"></div>
@@ -713,7 +719,9 @@
         if (num(a[F.homeownership]) > 0) h += row("Homeownership units", fmtNum(a[F.homeownership]));
         h += row("Population served", cleanTracked(a[F.population]) || "—");
         h += row("Construction Type", clean(a[F.construction]) || "—");
-        h += row("LIHTC", clean(a[F.developmentType]) || "—");
+        /* Samantha, 9 September 2026: keep this row in the popup even where the
+         * left-hand filter is dropped, and label it as a question. */
+        h += row("LIHTC?", clean(a[F.developmentType]) || "—");
         h += row("Council district", clean(a[F.council]) || "—");
         /* "Multiple" is not useful on its own — resolve it to the actual sources
          * using the broken-out funding fields that carry a value > 0. */
@@ -1824,16 +1832,26 @@
         // Scrollable project listing — exclude monetary/funding amount fields
         function renderBondDevList(statusFilter) {
           const rows = statusFilter ? allRows.filter(r => collapseStatus(pick(r, statusFields)) === statusFilter) : allRows;
-          // Total Units column removed 2026-08-17.
-          let tbl = `<thead><tr><th>Project</th><th>Category</th><th>Fiscal Year Funded</th><th>Status</th></tr></thead><tbody>`;
+          /* Units returned 2026-09-09, on Samantha's request, but only where the
+           * project is Complete. A pipeline project's unit count is a plan, not a
+           * delivery, and putting it in the same column would invite summing the
+           * two together. The column footer totals the completed units only, and
+           * says how many projects that covers. */
+          let tbl = `<thead><tr><th>Project</th><th>Category</th><th>Fiscal Year Funded</th><th>Units completed</th><th>Status</th></tr></thead><tbody>`;
+          let doneUnits = 0, doneProjects = 0;
           rows.forEach(r => {
             const proj = pick(r, nameFields) || '—';
             const bc = mapCategoryDev(pick(r, catFields));
             const fy = pick(r, fyFundedFields) || '';
             const st = collapseStatus(pick(r, statusFields));
-            tbl += `<tr><td>${proj}</td><td>${bc}</td><td>${fy}</td><td>${st}</td></tr>`;
+            const u = num(pick(r, unitFields));
+            const complete = st === 'Complete';
+            if (complete && u) { doneUnits += u; doneProjects++; }
+            tbl += `<tr><td>${proj}</td><td>${bc}</td><td>${fy}</td>` +
+                   `<td>${complete && u ? u.toLocaleString() : '—'}</td><td>${st}</td></tr>`;
           });
-          tbl += `<tr class="total-row"><td colspan="4">Total (${rows.length.toLocaleString()} project${rows.length === 1 ? '' : 's'})</td></tr>`;
+          tbl += `<tr class="total-row"><td colspan="3">Total (${rows.length.toLocaleString()} project${rows.length === 1 ? '' : 's'})</td>` +
+                 `<td>${doneUnits.toLocaleString()}</td><td>${doneProjects} complete</td></tr>`;
           tbl += '</tbody>';
           document.getElementById('bondDevList').innerHTML = tbl;
         }
@@ -1905,6 +1923,21 @@
       /* NCOD is a neighbourhood overlay name, which comes from a spatial join
        * rather than from any source file. A build whose layer does not carry it
        * would offer a filter with nothing in it. */
+      /* Sections and filters Samantha asked to drop before the council retreat.
+       * Hidden rather than removed: each comes back by flipping its flag once the
+       * Rental Development Tracker is reconciled. */
+      const hideIf = (flag, sel) => {
+        if (UI[flag] !== false) return;
+        const el = typeof sel === "string" ? document.querySelector(sel) : sel;
+        if (el) el.style.display = "none";
+      };
+      hideIf("showFundingFilter", "#fFundingHead");
+      hideIf("showFundingFilter", "#fFundingChecks");
+      hideIf("showFundingFilter", "#fundingFilterNote");
+      hideIf("showLihtcFilter", "#fDevTypeField");
+      hideIf("showAmiFilter", "#fAmiField");
+      hideIf("showAffordabilitySection", "#affordabilitySection");
+      hideIf("showGeographySection", "#geographySection");
       if (UI.showNcodFilter === false) {
         const ncodControl = document.getElementById("ncodControl");
         /* Set display directly. The wrapper carries an inline display:contents so

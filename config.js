@@ -307,6 +307,25 @@ export const UI = {
     + "housing layer served from the Raleigh ArcGIS Online org; boundary files served "
     + "with this page. Brand: City of Raleigh. Design review: DesignTeam@raleighnc.gov.",
 
+  /* --- Samantha's list, 9 September 2026 -----------------------------------
+   * Three filters and two whole sections come off before the council retreat.
+   * Every one is HIDDEN rather than removed: she wants the filters back in a
+   * later iteration, once the funding-source information has been reconciled
+   * back in from the Rental Development Tracker. Flip a flag to true and the
+   * control returns exactly as it was.
+   *
+   * The LIHTC filter also had a real bug behind it, which is fixed in the layer
+   * rather than here: Development_Type and Funding_Source were the wrong way
+   * round, so the filter offered "Rental" and "Rental and homeownership" where
+   * it should have offered 4% LIHTC, 9% LIHTC and Non-LIHTC. The popup's LIHTC
+   * row was reading the same wrong field. Both now read correctly, so when this
+   * filter is switched back on it will work without further change.          */
+  showFundingFilter: false,
+  showAmiFilter: false,
+  showLihtcFilter: false,
+  showAffordabilitySection: false,
+  showGeographySection: false,
+
   showNcodFilter: false,
   geographyCountSuffix: "",
   geographyTitleSuffix: "",
