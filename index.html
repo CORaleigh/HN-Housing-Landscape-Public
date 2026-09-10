@@ -2344,9 +2344,12 @@
                 <td style="text-align:left;">${clean(a[F.fundingSource]) || "—"}</td>
                 <td style="text-align:left;">${clean(a[F.developmentType]) || "—"}</td>
               </tr>`;
-        const byYearThenName = (a, b) => {
+        /* Newest fiscal year first, so the most recent completions are the first
+         * thing in view rather than eleven years down a scrolling table.
+         * Alphabetical by project within a year. */
+        const byNewestYearThenName = (a, b) => {
           const fa = clean(a[F.fiscalYear]) || "", fb = clean(b[F.fiscalYear]) || "";
-          if (fa !== fb) return fa.localeCompare(fb);
+          if (fa !== fb) return fb.localeCompare(fa);
           return (clean(a[F.project]) || "").localeCompare(clean(b[F.project]) || "");
         };
         const projectTableHead = `
@@ -2360,7 +2363,7 @@
           </tr></thead>`;
         const completedTableEl = document.getElementById("completedTable");
         if (completedTableEl) {
-          const sortedCompleted = completedRows.slice().sort(byYearThenName);
+          const sortedCompleted = completedRows.slice().sort(byNewestYearThenName);
           const completedUnits = sortedCompleted.reduce((t, a) => t + (num(a[F.totalUnits]) || 0), 0);
           completedTableEl.innerHTML = projectTableHead + `<tbody>${sortedCompleted.map(rowCells).join("")}</tbody>`;
           const noteEl = document.getElementById("completedTableNote");
