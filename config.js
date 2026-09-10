@@ -68,6 +68,10 @@ export const HOUSING_LAYERS = [DEV_LAYER];
 export const DEV_FIELDS = {
   ...DEV_FIELDS_BASE,
   ncod: null,
+  /* Units produced in the fiscal year, which is how the department counts and
+   * how the tables above count. Total_Units is the finished building's size, and
+   * the source leaves it blank on nine completed rows. */
+  unitsCounted: "Units_Counted_This_Fiscal_Year",
   /* DAHF is not listed. Housing confirmed on 9 September 2026 that DAHF and Penny
    * are the same source, so the money is all in Penny_736 and a separate DAHF row
    * would show one fund twice under two names. The field still exists on the
@@ -284,6 +288,21 @@ export const UI = {
    *    published once the project is <strong>Complete</strong>, so an AMI filter
    *    returns completed projects only."                                       */
   filterScopeNoteHtml: "",
+
+  /* States the total and, more usefully, why it is not the figure a reader has
+   * just seen above. {projects} and {units} are filled at render time. */
+  completedTableNoteHtml:
+    "<strong>{projects} completed development projects, {units} units.</strong> " +
+    "City housing development only, so home repair, homebuyer assistance and other " +
+    "housing impact are not included; the source does not record those project by " +
+    "project. Units are counted in the fiscal year the project was completed, the same " +
+    "basis as the tables above, and agree with the department's published development " +
+    "figure of 4,697 in ten of the twelve years. The two differences are 190 units " +
+    "completed in FY 2014-2015, which is earlier than the department's published summary " +
+    "reaches, and 3 units in FY 2022-2023, where that summary and the department's own " +
+    "detail records disagree. A dash means the source records nothing for that project. " +
+    "Nine of these developments received no city funding, which is why their funding and " +
+    "LIHTC cells are empty.",
 
   /* Was: "Connected to City of Raleigh services (maps.raleighnc.gov and Raleigh
    * AGOL)". Two of these reference layers are files served with the page, and
