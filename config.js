@@ -72,6 +72,9 @@ export const DEV_FIELDS = {
    * how the tables above count. Total_Units is the finished building's size, and
    * the source leaves it blank on nine completed rows. */
   unitsCounted: "Units_Counted_This_Fiscal_Year",
+  /* One sentence for the popup, carried by the layer. Set on the five developments
+   * Housing counted but the city did not fund (Samantha Smith, 15 September 2026). */
+  publicNote: "Public_Note",
   /* DAHF is not listed. Housing confirmed on 9 September 2026 that DAHF and Penny
    * are the same source, so the money is all in Penny_736 and a separate DAHF row
    * would show one fund twice under two names. The field still exists on the
@@ -115,11 +118,23 @@ const CAT_TO_FIELD = {
   "Home repair":          "Homeowner_Rehabs",
   "Homebuyer assistance": "Homebuyer_Assistance",
   "Other housing impact": "Other_Housing_Impact",
+  "Non-COR funded LIHTC": "Non_COR_Funded_LIHTC",
 };
 
+/* Non-COR funded LIHTC, Samantha Smith, 15 September 2026. Five developments the
+ * department counted under its earlier methodology that received no City of
+ * Raleigh money: 616 units. The table moves them out of New construction, so every
+ * year's total, and the 5,873 overall, is unchanged. The split is made in
+ * HN_Production_By_Year, not here; this only gives the category a tile, a colour
+ * and a place in the legend. Placed last so the existing colours do not shift. */
 export const SUMMARY_TABLE = {
   ...SUMMARY_BASE,
   url: `${ORG}/HN_Production_By_Year/FeatureServer/0`,
+  categories: [
+    ...SUMMARY_BASE.categories,
+    { field: "Non_COR_Funded_LIHTC", label: "Non-COR funded LIHTC", color: BRAND.navy,
+      note: "Developments awarded tax credits and counted under the department's earlier development methodology that received no City of Raleigh funding. Shown separately from new construction." },
+  ],
 };
 
 const pivotProduction = (rows) => {
@@ -298,8 +313,8 @@ export const UI = {
     "project. Units are counted in the fiscal year the project was completed, the same " +
     "basis as the tables above, and the total matches the department's own published " +
     "development figure. A dash under Population means the department's records hold no " +
-    "population for that project, which is the case for five developments that received " +
-    "no city funding.",
+    "population for that project, which is the case for the five Non-COR funded LIHTC " +
+    "developments, which received no city funding.",
 
   /* Was: "Connected to City of Raleigh services (maps.raleighnc.gov and Raleigh
    * AGOL)". Two of these reference layers are files served with the page, and
@@ -361,6 +376,14 @@ export const UI = {
   /* Funding source and LIHTC come off the completed table, also at Samantha's
    * request. Both are still in the layer, the popup and the workbook. */
   completedTableHideColumns: ["fundingSource", "developmentType"],
+
+  /* --- Samantha, 15 September 2026 ----------------------------------------
+   * The Housing pipeline section is for the internal version only. The bond
+   * section shows committed, complete and pipeline together with no toggle, and
+   * its project table drops Units completed and Status. All hidden, not removed. */
+  showPipelineSection: false,
+  showBondStatusFilter: false,
+  bondProjectsHideColumns: ["unitsCompleted", "status"],
 
   showNcodFilter: false,
   geographyCountSuffix: "",

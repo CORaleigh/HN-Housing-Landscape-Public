@@ -385,6 +385,9 @@
       </div>
 
       </div><!-- /affordabilitySection -->
+      <!-- Wrapped so a public build can hide it. Samantha, 15 September 2026:
+           the pipeline section is for the internal version only. -->
+      <div id="pipelineSection">
       <h2 style="color:var(--raleigh-green);font-size:1.15rem;margin:30px 0 4px;border-top:1px solid var(--border);padding-top:20px;">Housing pipeline</h2>
       <div><span class="src-badge">Source: City Housing Development layer (Project_Status = Pipeline)</span></div>
       <div class="caveat" id="pipelineCaveat" style="margin-top:8px;"></div>
@@ -393,6 +396,7 @@
         <h3 style="margin:0 0 12px 0;">Pipeline projects</h3>
         <div class="table-scroll" style="max-height:280px;overflow-x:auto;"><table class="data-table" id="pipelineTable"></table></div>
       </div>
+      </div><!-- /pipelineSection -->
 
       <!-- Cut from External per 8.6.26 leadership call (Internal keeps it) --
            see the MODE check near RESIDENT_ON_MAP for the removal + the
@@ -761,6 +765,10 @@
         }
         if (a[F.coDate]) h += row("Certificate of Occ.", fmtDate(a[F.coDate]));
         h += `</table>`;
+        /* A sentence the layer carries for the public, such as the note on the five
+         * developments Housing counted but the city did not fund. Read from the
+         * data so the wording is edited in one place, not here. */
+        if (F.publicNote && clean(a[F.publicNote])) h += `<div class="note" style="margin-top:8px;">${clean(a[F.publicNote])}</div>`;
         if (showFin) h += amiBar(a, F.amiBands, F.unrestricted);
         else h += `<div class="note" style="margin-top:8px;">The breakdown of AMI units and the City's total contribution amount will be published when construction is complete.</div>`;
         return h + `</div>`;
@@ -1812,8 +1820,9 @@
           const scopeLabel = statusFilter === 'Complete' ? 'complete only'
             : statusFilter === 'Pipeline' ? 'pipeline only' : 'complete & pipeline';
           document.getElementById('bondDevScope').textContent = scopeLabel;
-          document.getElementById('bondDevCaveat').innerHTML =
-            `Showing <strong>${scopeLabel}</strong> — ${totalProjects} of ${devRows.length} project(s) in the table.`
+          document.getElementById('bondDevCaveat').innerHTML = (UI.showBondStatusFilter === false
+            ? `All <strong>${totalProjects}</strong> project(s), complete and pipeline.`
+            : `Showing <strong>${scopeLabel}</strong> — ${totalProjects} of ${devRows.length} project(s) in the table.`)
             + (droppedTotalsRows ? ` A totals row carrying no project or status was excluded from the source table.` : '');
 
           // Units by category. Preferred source is the published totals table,
@@ -1833,7 +1842,7 @@
           const unitsNoteEl = document.getElementById('bondDevUnitsNote');
           if (unitsNoteEl) {
             unitsNoteEl.textContent = devUnitsByCat
-              ? `${unitsTotal.toLocaleString()} units across all development projects, from the 2020 Bond Tracker totals table. Grosvenor Gardens is funded under two categories and its 62 units are counted once, under Site Acquisition. This chart covers all projects and does not follow the status filter above.`
+              ? `${unitsTotal.toLocaleString()} units across all development projects, from the 2020 Bond Tracker totals table. Grosvenor Gardens is funded under two categories and its 62 units are counted once, under Site Acquisition. This chart covers all projects${UI.showBondStatusFilter === false ? '' : ' and does not follow the status filter above'}.`
               : `${unitsTotal.toLocaleString()} units, summed from the project rows because the totals table could not be reached. Grosvenor Gardens' 62 units are counted twice in this fallback.`;
           }
           const catLabels = ALLOWED_CATS_DEV.filter(c => byCat[c] > 0).concat(byCat['Other'] > 0 ? ['Other'] : []);
@@ -1857,7 +1866,13 @@
            * delivery, and putting it in the same column would invite summing the
            * two together. The column footer totals the completed units only, and
            * says how many projects that covers. */
-          let tbl = `<thead><tr><th>Project</th><th>Category</th><th>Fiscal Year Funded</th><th>Units completed</th><th>Status</th></tr></thead><tbody>`;
+          /* Samantha, 15 September 2026: a build can drop Units completed and Status.
+           * Hidden by key, so the columns return by removing them from the list. */
+          const hideCol = new Set(UI.bondProjectsHideColumns || []);
+          const showUnits = !hideCol.has('unitsCompleted'), showStatus = !hideCol.has('status');
+          let tbl = `<thead><tr><th>Project</th><th>Category</th><th>Fiscal Year Funded</th>` +
+                    (showUnits ? `<th>Units completed</th>` : '') + (showStatus ? `<th>Status</th>` : '') +
+                    `</tr></thead><tbody>`;
           let doneUnits = 0, doneProjects = 0;
           rows.forEach(r => {
             const proj = pick(r, nameFields) || '—';
@@ -1868,10 +1883,12 @@
             const complete = st === 'Complete';
             if (complete && u) { doneUnits += u; doneProjects++; }
             tbl += `<tr><td>${proj}</td><td>${bc}</td><td>${fy}</td>` +
-                   `<td>${complete && u ? u.toLocaleString() : '—'}</td><td>${st}</td></tr>`;
+                   (showUnits ? `<td>${complete && u ? u.toLocaleString() : '—'}</td>` : '') +
+                   (showStatus ? `<td>${st}</td>` : '') + `</tr>`;
           });
           tbl += `<tr class="total-row"><td colspan="3">Total (${rows.length.toLocaleString()} project${rows.length === 1 ? '' : 's'})</td>` +
-                 `<td>${doneUnits.toLocaleString()}</td><td>${doneProjects} complete</td></tr>`;
+                 (showUnits ? `<td>${doneUnits.toLocaleString()}</td>` : '') +
+                 (showStatus ? `<td>${doneProjects} complete</td>` : '') + `</tr>`;
           tbl += '</tbody>';
           document.getElementById('bondDevList').innerHTML = tbl;
         }
@@ -1958,6 +1975,11 @@
       hideIf("showAmiFilter", "#fAmiField");
       hideIf("showAffordabilitySection", "#affordabilitySection");
       hideIf("showGeographySection", "#geographySection");
+      hideIf("showPipelineSection", "#pipelineSection");
+      /* Samantha, 15 September 2026: the bond section shows committed, complete
+       * and pipeline together, with no choice. The select stays in the page on its
+       * default, so every figure below renders exactly as it did unfiltered. */
+      hideIf("showBondStatusFilter", ".bond-filter-bar");
       if (UI.showNcodFilter === false) {
         const ncodControl = document.getElementById("ncodControl");
         /* Set display directly. The wrapper carries an inline display:contents so
