@@ -61,13 +61,15 @@ export const DEV_LAYER = {
 export const HOUSING_LAYERS = [DEV_LAYER];
 
 /* --- Field map for that layer ----------------------------------------------- *
- * Same keys as the base build so the popup and filter code is unchanged. Two
- * real differences: the fund columns are per fund, and there is no overlay name
- * field, because a neighbourhood overlay name is a spatial join result rather
- * than something the source records.                                            */
+ * Same keys as the base build so the popup and filter code is unchanged. The real
+ * difference is that the fund columns are per fund.
+ *
+ * NCOD, 16 September 2026. OLAY_NAME was missing from this layer, so the map's
+ * NCOD filter offered nothing. It is now on the layer, written by
+ * annotate_dev_layer_ncod.py as a spatial join against ncods.geojson, the same
+ * boundaries the map draws. The base field name is used, so no override here.  */
 export const DEV_FIELDS = {
   ...DEV_FIELDS_BASE,
-  ncod: null,
   /* Units produced in the fiscal year, which is how the department counts and
    * how the tables above count. Total_Units is the finished building's size, and
    * the source leaves it blank on nine completed rows. */
@@ -263,9 +265,9 @@ export const UI = {
   /* --- City housing by geography ------------------------------------------
    * Three things, all consequences of this build mapping one layer.
    *
-   * The NCOD overlay filter is off. A neighbourhood overlay name is a spatial
-   * join result rather than anything a source records, so this layer has no such
-   * field and the filter offered a single empty option.
+   * The NCOD overlay control in this section is off, at Mary's request on
+   * 9 September 2026. The layer now carries OLAY_NAME (16 September), so setting
+   * showNcodFilter back to true would work. The map's own NCOD filter is on.
    *
    * "(mapped)" is dropped from the tile labels and the chart title. It was there
    * to warn that these were point counts rather than the tracker's reported
