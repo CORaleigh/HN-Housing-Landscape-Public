@@ -189,7 +189,7 @@
             <div class="note" id="fundingFilterNote" style="margin-top:6px;">This is only reflective of funding sources for the year 2025-2026. We are working on updating past years in future iterations of the dashboard.</div>
           </div>
           <div class="field">
-            <label for="unitMinN">Total units per project</label>
+            <label for="unitMinN" id="unitSliderLabel">Total units per project</label>
             <div class="range-wrap">
               <div class="range-track"></div>
               <div class="range-fill" id="unitFill"></div>
@@ -228,7 +228,7 @@
           <h2>Legend</h2>
           <div class="legend-item"><span class="swatch" style="background:#0D6937"></span> Completed City development</div>
           <div class="legend-item"><span class="swatch" style="background:#FBAE40"></span> In pipeline (pre / under construction)</div>
-          <div class="legend-item" style="margin-top:6px;color:#666;font-size:.78rem;">Development marker size ∝ total units</div>
+          <div class="legend-item" style="margin-top:6px;color:#666;font-size:.78rem;">Development marker size ∝ <span id="markerSizeUnits">total units</span></div>
           <div id="legendResident">
             <div class="legend-item" style="margin-top:8px;"><span class="swatch" style="background:#4C8C40;width:9px;height:9px;"></span> Other housing impact (approx.)</div>
             <div class="legend-item"><span class="swatch" style="background:#189ABC;width:9px;height:9px;"></span> Homeowner rehab (approx.)</div>
@@ -541,6 +541,17 @@
        * is driven from the UI object rather than from scattered MODE checks.  */
       document.body.dataset.mode = MODE;
 
+      /* What the development layer's unit figure is called on screen. The City
+       * build points DEV_FIELDS.totalUnits at the units counted in the fiscal
+       * year, so it names them "Units"; the other builds keep "Total units". */
+      const UNITS_LABEL = UI.unitsLabel || "Total units";
+      {
+        const l1 = document.getElementById("unitSliderLabel");
+        if (l1 && UI.unitsLabel) l1.textContent = UNITS_LABEL + " per project";
+        const l2 = document.getElementById("markerSizeUnits");
+        if (l2 && UI.unitsLabel) l2.textContent = UNITS_LABEL.toLowerCase();
+      }
+
       /* Years a build chooses not to show. Nothing is deleted: the rows stay in
        * the layer and in the workbook, and this is a filter that every read of
        * the development layer applies, so the map, the counts, the dropdown and
@@ -699,7 +710,7 @@
         ],
         defaultSymbol: marker("#8a8a8a"), defaultLabel: "Other",
         visualVariables: [{
-          type: "size", field: DEV_FIELDS.totalUnits, legendOptions: { title: "Total units" },
+          type: "size", field: DEV_FIELDS.totalUnits, legendOptions: { title: UNITS_LABEL },
           stops: [ { value: 10, size: 8 }, { value: 50, size: 16 }, { value: 120, size: 26 }, { value: 300, size: 38 } ],
         }],
       };
@@ -736,13 +747,11 @@
         h += row("Address", clean(a[F.address]) || "—");
         h += row("Development Status", clean(a[F.projectStatus]) || clean(a[F.status]) || "—");
         h += row("Fiscal year", clean(a[F.fiscalYear]) || "—");
-        h += row("Total units", fmtNum(a[F.totalUnits]));
-        /* The units the department counted when the project completed, which is
-         * what every chart and the completed table use. Total units is the size of
-         * the property and is blank where no source records one, as for the five
-         * developments the city did not fund. Complete projects only: on a pipeline
-         * project nothing has been completed yet. Builds without the field skip it. */
-        if (F.unitsCounted && isComplete) h += row("Units completed", fmtNum(a[F.unitsCounted]));
+        h += row(UNITS_LABEL, fmtNum(a[F.totalUnits]));
+        /* Only where a build keeps two different unit fields. The City build points
+         * both at the units counted in the fiscal year, so this row is skipped. */
+        if (F.unitsCounted && F.unitsCounted !== F.totalUnits && isComplete)
+          h += row("Units completed", fmtNum(a[F.unitsCounted]));
         if (num(a[F.homeownership]) > 0) h += row("Homeownership units", fmtNum(a[F.homeownership]));
         h += row("Population served", cleanTracked(a[F.population]) || "—");
         h += row("Construction Type", clean(a[F.construction]) || "—");
@@ -2019,7 +2028,7 @@
          * tracker's reported totals. A build that carries one programme has no
          * such contrast to draw, so UI.geographyCountSuffix empties it. */
         const mSuffix = (UI.geographyCountSuffix === undefined) ? " (mapped)" : UI.geographyCountSuffix;
-        const kpi = [[`Total units${mSuffix}`, rows2.reduce((s, r) => s + r.units, 0)],
+        const kpi = [[`${UNITS_LABEL}${mSuffix}`, rows2.reduce((s, r) => s + r.units, 0)],
                      ...PROGRAMS.map(p => [`${p.label}${mSuffix}`, unitsOf(p.id)])];
         document.getElementById("distKpis").innerHTML = kpi.map(([l, v]) =>
           `<div class="kpi"><div class="num">${v.toLocaleString()}</div><div class="lbl">${l}</div></div>`).join("");
@@ -2273,8 +2282,8 @@
              * small text directly under the bars, where someone reading a
              * surprising year will actually look for it. */
           } else {
-            if (unitGaps) caveatParts.push(`No Total Units recorded (counted as 0, not excluded): ${unitGaps}.`);
-            caveatParts.push(`The unit totals below reflect only projects with Total Units recorded — they are not a count of all projects, and will undercount true production wherever Total Units is blank.`);
+            if (unitGaps) caveatParts.push(`No ${UNITS_LABEL.toLowerCase()} recorded (counted as 0, not excluded): ${unitGaps}.`);
+            caveatParts.push(`The unit totals below reflect only projects with ${UNITS_LABEL.toLowerCase()} recorded — they are not a count of all projects, and will undercount true production wherever that is blank.`);
           }
           document.getElementById("fundingCaveat").innerHTML = caveatParts.join(" ");
           const basisEl = document.getElementById("fundingBasisNote");
@@ -2362,7 +2371,7 @@
         // Data-quality caveat: how many pipeline projects are missing key table fields
         const gapCount = (field) => pipelineRows.filter(a => !clean(a[field])).length;
         const gaps = [
-          ["Total Units", gapCount(F.totalUnits)],
+          [UNITS_LABEL, gapCount(F.totalUnits)],
           ["Funding Source", gapCount(F.fundingSource)],
           ["Development Type", gapCount(F.developmentType)],
           ["Population", gapCount(F.population)],
@@ -2371,7 +2380,7 @@
         document.getElementById("pipelineCaveat").innerHTML = gaps.length
           ? `Of the ${pipelineRows.length} pipeline projects, some are missing key fields: ` +
             gaps.map(([lbl, n]) => `${n} have no ${lbl} recorded`).join("; ") + `. Blank fields show as "—" in the table below; ` +
-            `projects with no Total Units recorded count as 0 toward the pipeline-units total and percentage above (not excluded, but not adding any units either).`
+            `projects with no ${UNITS_LABEL.toLowerCase()} recorded count as 0 toward the pipeline-units total and percentage above (not excluded, but not adding any units either).`
           : `All ${pipelineRows.length} pipeline projects have complete data for the fields shown below.`;
 
         console.log("Housing pipeline - pipeline records:", pipelineRows.length, "units:", totalUnitsPipeline, "pct:", pctPipeline);
@@ -2457,7 +2466,7 @@
           <thead><tr>
             <th style="text-align:left;">Fiscal Year</th>
             <th style="text-align:left;">Project</th>
-            <th>Total Units</th>
+            <th>${UNITS_LABEL}</th>
             <th style="text-align:left;">Population</th>
             <th style="text-align:left;">Funding Source</th>
             <th style="text-align:left;">Development Type</th>

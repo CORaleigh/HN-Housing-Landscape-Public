@@ -74,6 +74,12 @@ export const DEV_FIELDS = {
    * how the tables above count. Total_Units is the finished building's size, and
    * the source leaves it blank on nine completed rows. */
   unitsCounted: "Units_Counted_This_Fiscal_Year",
+  /* Mary, 17 September 2026: Units everywhere, Total Units nowhere. Every widget
+   * that reads a development's unit figure (popup, marker size, units slider,
+   * pipeline tiles and table, geography) reads this field instead of Total_Units.
+   * Total_Units stays on the layer, unused, because it is only partly populated
+   * and never matched how the department counts. */
+  totalUnits: "Units_Counted_This_Fiscal_Year",
   /* One sentence for the popup, carried by the layer. Set on the five developments
    * Housing counted but the city did not fund (Samantha Smith, 15 September 2026). */
   publicNote: "Public_Note",
@@ -241,6 +247,8 @@ export const DATA_SOURCES = {
 
 /* --- On-screen copy --------------------------------------------------------- */
 export const UI = {
+  /* On-screen name for the development unit figure. See DEV_FIELDS.totalUnits. */
+  unitsLabel: "Units",
   docTitle: "Raleigh Housing Landscape | Public Dashboard",
   versionLabel: "Public version",
   versionKind: "public",
