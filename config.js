@@ -71,14 +71,13 @@ export const HOUSING_LAYERS = [DEV_LAYER];
 export const DEV_FIELDS = {
   ...DEV_FIELDS_BASE,
   /* Units produced in the fiscal year, which is how the department counts and
-   * how the tables above count. Total_Units is the finished building's size, and
-   * the source leaves it blank on nine completed rows. */
+   * how the tables above count. */
   unitsCounted: "Units_Counted_This_Fiscal_Year",
   /* Mary, 17 September 2026: Units everywhere, Total Units nowhere. Every widget
    * that reads a development's unit figure (popup, marker size, units slider,
-   * pipeline tiles and table, geography) reads this field instead of Total_Units.
-   * Total_Units stays on the layer, unused, because it is only partly populated
-   * and never matched how the department counts. */
+   * pipeline tiles and table, geography) reads this field. Total_Units has been
+   * deleted from the layer and from every table feeding this dashboard. The key
+   * name totalUnits is kept only because the shared page reads it. */
   totalUnits: "Units_Counted_This_Fiscal_Year",
   /* One sentence for the popup, carried by the layer. Set on the five developments
    * Housing counted but the city did not fund (Samantha Smith, 15 September 2026). */
@@ -192,19 +191,21 @@ export const DATA_SOURCES = {
       .filter((r) => String(r.Bond_Category || "").trim().toUpperCase() !== "TOTAL")
       .map((r) => ({
         Bond_2020_Category: r.Bond_Category,
-        Total_Units: Number(r.Total_Units) || 0,
+        /* The table's column is Units (Total_Units was renamed, 17 September 2026).
+         * Total_Units here is only the name the page's bond code reads. */
+        Total_Units: Number(r.Units) || 0,
         Funds_Available: Number(r.Budget) || 0,
         Funds_Committed: Number(r.Funds_Committed) || 0,
       })),
   },
   bondUnits: {
     url: `${ORG}/HN_Bond_Category_Totals/FeatureServer/0`,
-    query: "where=1%3D1&outFields=Bond_Category,Total_Units&returnGeometry=false&f=json",
+    query: "where=1%3D1&outFields=Bond_Category,Units&returnGeometry=false&f=json",
     adaptRows: (rows) => rows
       .filter((r) => String(r.Bond_Category || "").trim().toUpperCase() !== "TOTAL")
       .map((r) => ({
         Bond_2020_Category: r.Bond_Category,
-        Total_Units: Number(r.Total_Units) || 0,
+        Total_Units: Number(r.Units) || 0,
       })),
   },
   /* Fixes two things the map-layer sum got wrong. Home Repair and Homebuyer
