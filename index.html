@@ -737,6 +737,12 @@
         h += row("Development Status", clean(a[F.projectStatus]) || clean(a[F.status]) || "—");
         h += row("Fiscal year", clean(a[F.fiscalYear]) || "—");
         h += row("Total units", fmtNum(a[F.totalUnits]));
+        /* The units the department counted when the project completed, which is
+         * what every chart and the completed table use. Total units is the size of
+         * the property and is blank where no source records one, as for the five
+         * developments the city did not fund. Complete projects only: on a pipeline
+         * project nothing has been completed yet. Builds without the field skip it. */
+        if (F.unitsCounted && isComplete) h += row("Units completed", fmtNum(a[F.unitsCounted]));
         if (num(a[F.homeownership]) > 0) h += row("Homeownership units", fmtNum(a[F.homeownership]));
         h += row("Population served", cleanTracked(a[F.population]) || "—");
         h += row("Construction Type", clean(a[F.construction]) || "—");
