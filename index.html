@@ -20,7 +20,7 @@
              itself; this dialog is now only the disclaimer + acknowledgement. -->
         <div class="welcome-panel active" data-step="1">
           <h2 id="welcomeHeading">Disclaimer &amp; Contact</h2>
-          <p>The information provided in this dashboard is for general informational purposes only. It is updated periodically by City of Raleigh staff, and while every effort is made to ensure its accuracy and completeness, the City makes no warranties or guarantees regarding the data presented here. This dashboard is a prototype intended for internal staff use and is not an official public record.</p>
+          <p id="welcomeDisclaimer">The information provided in this dashboard is for general informational purposes only. It is updated periodically by City of Raleigh staff, and while every effort is made to ensure its accuracy and completeness, the City makes no warranties or guarantees regarding the data presented here.</p>
           <p>Questions, feedback, or corrections about this dashboard can be directed to the City of Raleigh Housing &amp; Neighborhoods Department at <em>housing@raleighnc.gov</em>.</p>
           <p>Guidance on what each section contains is available in the <strong>About</strong> boxes at the top of the map, production and 2020 Bond sections.</p>
           <p>By clicking "I Agree" below, you acknowledge that you have read and understand the information presented here.</p>
@@ -268,8 +268,8 @@
         </div>
 
         <div class="footer-note">
-          Prototype (V2) — template for staff use, not an approved public release. Housing layers served from the Raleigh
-          AGOL org; reference layers from maps.raleighnc.gov. Brand: City of Raleigh. Design review: DesignTeam@raleighnc.gov.
+          Housing layers served from the Raleigh AGOL org; reference layers from maps.raleighnc.gov.
+          Brand: City of Raleigh. Design review: DesignTeam@raleighnc.gov.
         </div>
       </aside>
 
@@ -1278,6 +1278,10 @@
       if (UI.filterScopeNoteHtml !== undefined) {
         const el = document.getElementById("filterScopeNote");
         if (el) { el.innerHTML = UI.filterScopeNoteHtml; el.hidden = !UI.filterScopeNoteHtml; }
+      }
+      if (UI.welcomeDisclaimerHtml !== undefined) {
+        const el = document.getElementById("welcomeDisclaimer");
+        if (el) el.innerHTML = UI.welcomeDisclaimerHtml;
       }
       if (UI.sidebarFooterHtml !== undefined) {
         const el = document.querySelector(".footer-note");
@@ -2487,11 +2491,13 @@
       }
 
       const updated = (sumRows.map(r => r[SF.dateUpdated]).filter(Boolean).sort().pop()) || "n/a";
-      document.getElementById("footer").innerHTML = UI.footerHtml
+      /* {updated} in a build's footerHtml is filled with the source table's own
+       * latest quarterly update date. */
+      document.getElementById("footer").innerHTML = (UI.footerHtml
         || (`Source: <em>Housing Production Tracker</em> aggregate table (hosted). Completed units exclude pipeline; ` +
-            `pipeline is reported only from FY26 forward (per HCD rules). Latest quarterly update in source: ${updated}. ` +
+            `pipeline is reported only from FY26 forward (per HCD rules). Latest quarterly update in source: {updated}. ` +
             `Mapped-point counts (district panel) are geometry-derived and will not reconcile to this table. ` +
-            `Prototype (V2) — template for staff use, not an approved public release. Brand: City of Raleigh (DesignTeam@raleighnc.gov).`);
+            `Brand: City of Raleigh (DesignTeam@raleighnc.gov).`)).replace("{updated}", updated);
     </script>
   </body>
 </html>

@@ -250,9 +250,20 @@ export const DATA_SOURCES = {
 export const UI = {
   /* On-screen name for the development unit figure. See DEV_FIELDS.totalUnits. */
   unitsLabel: "Units",
-  docTitle: "Raleigh Housing Landscape | Public Dashboard",
-  versionLabel: "Public version",
+  docTitle: "City of Raleigh Housing Landscape",
+  /* Mary, 17 September 2026: nothing on the page may suggest there is another
+   * version of this dashboard, or that anything is being held back. An empty
+   * label hides the masthead badge; the disclaimer and both footers below drop
+   * the "prototype / internal staff use / not an approved public release"
+   * wording for the same reason. */
+  versionLabel: "",
   versionKind: "public",
+
+  welcomeDisclaimerHtml:
+    "The information provided in this dashboard is for general informational purposes " +
+    "only. It is updated periodically by City of Raleigh staff, and while every effort " +
+    "is made to ensure its accuracy and completeness, the City makes no warranties or " +
+    "guarantees regarding the data presented here.",
   showSourceNotes: false,
   showPipelineFinancials: false,
 
@@ -336,21 +347,20 @@ export const UI = {
     + "come from Esri's American Community Survey service.",
 
   /* Was: named the old aggregate tracker and reported a quarterly update date
-   * this build's table does not carry. The prototype wording is left exactly as
-   * it was; changing a disclaimer is not a data decision. */
+   * this build's table does not carry. */
   footerHtml:
     "Sources: HN_Production_By_Year, HN_Funding_By_Year, HN_Development_Projects, "
     + "HN_Bond_Category_Totals, HN_Bond_By_Fiscal_Year, HN_Bond_Projects and "
     + "HN_City_Housing_Development, published from the Housing and Community Development "
     + "Department's and Finance's own records. Completed units exclude pipeline. "
     + "Mapped point counts are geometry-derived and will not reconcile to the production "
-    + "tables. Prototype (V2) — template for staff use, not an approved public release. "
-    + "Brand: City of Raleigh (DesignTeam@raleighnc.gov).",
+    + "tables. City of Raleigh Housing and Community Development "
+    + "(housing@raleighnc.gov).",
 
   sidebarFooterHtml:
-    "Prototype (V2) — template for staff use, not an approved public release. City "
-    + "housing layer served from the Raleigh ArcGIS Online org; boundary files served "
-    + "with this page. Brand: City of Raleigh. Design review: DesignTeam@raleighnc.gov.",
+    "City housing layer served from the Raleigh ArcGIS Online org; boundary files served "
+    + "with this page. City of Raleigh Housing and Community Development "
+    + "(housing@raleighnc.gov).",
 
   /* --- Samantha's list, 9 September 2026 -----------------------------------
    * Three filters and two whole sections come off before the council retreat.
