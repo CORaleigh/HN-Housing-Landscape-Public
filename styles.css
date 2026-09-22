@@ -480,6 +480,18 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
   .card .chart-box { height: 240px; }
 }
 
+/* A phone held sideways: wide enough to keep the panel beside the map, but far
+   too short for the 520px floor the section carries for laptops. Without this
+   the map runs off the bottom of the screen on every landscape phone. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .map-section { min-height: 0; }
+  /* The masthead is sticky and the screen is short, so a second row of links
+     would eat a third of it. */
+  .app-header { height: var(--header-h); flex-wrap: nowrap; }
+  .app-header nav { margin-left: auto; width: auto; }
+  .app-header nav a { flex: 0 0 auto; }
+}
+
 /* Nothing on the page may push it sideways; wide tables scroll inside their
    own box instead. */
 html, body { overflow-x: hidden; }
