@@ -329,7 +329,8 @@
       <div class="card wide" style="margin-top:12px;">
         <div class="table-scroll"><table class="data-table" id="catTable"></table></div>
         <div class="note" style="margin-top:10px;">"Sum of … (yearly and total)" for each program —
-        Rental Units Constructed, Rental Units Preserved, Home Repair, Homebuyer Assistance, and Other Housing Impact.</div>
+        Rental Units Constructed, Rental Units Preserved, Home Repair, Homebuyer Assistance, and Other Housing Impact.
+        <div id="catTableExtraNote" hidden style="margin-top:6px;"></div></div>
       </div>
 
       <div class="card-grid">
@@ -1620,6 +1621,11 @@
       const colTotals = labels.map((_, i) => CATS.reduce((s, c) => s + num(yearRows[i][c.field]), 0));
       tbody += `<tr class="total-row"><td>Total completed</td>${colTotals.map(v => `<td>${v.toLocaleString()}</td>`).join("")}<td class="total-col">${colTotals.reduce((s, n) => s + n, 0).toLocaleString()}</td></tr></tbody>`;
       document.getElementById("catTable").innerHTML = thead + tbody;
+      /* A build can add a line under the table, e.g. a caveat about one year. */
+      {
+        const el = document.getElementById("catTableExtraNote");
+        if (el && UI.catTableExtraNoteHtml) { el.innerHTML = UI.catTableExtraNoteHtml; el.hidden = false; }
+      }
 
       // --------------- 2020 Bond totals table (years as rows, categories as columns) ---------------
       try {

@@ -404,6 +404,14 @@ export const UI = {
    * section shows committed, complete and pipeline together with no toggle, and
    * its project table drops Units completed and Status. All hidden, not removed. */
   showPipelineSection: false,
+
+  /* Samantha, 22 September 2026, wording agreed with Mary. Housing's FY26-FY30
+   * tracker lists Healing Transitions as New construction, 113 units, Complete,
+   * so these units are inside FY 2025-2026's 669 Rental Units Constructed, not
+   * the 124 preserved (Jeffries Ridge, Tryon Grove and Avonlea). */
+  catTableExtraNoteHtml:
+    "Please note, 113 units in the rental units constructed category for 25-26 are " +
+    "shelter spaces at Healing Transitions Men's Shelter.",
   showBondStatusFilter: false,
   bondProjectsHideColumns: ["unitsCompleted", "status"],
 
