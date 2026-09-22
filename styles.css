@@ -442,8 +442,10 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
     color: var(--raleigh-green); background: var(--green-tint-alt);
     border: 0; border-top: 1px solid var(--border);
   }
+  /* Down means "this opens below"; up means "close it". The arrow follows the
+     state rather than always pointing down. */
   .sidebar-toggle::after { content: " ▾"; }
-  .sidebar-toggle[aria-expanded="false"]::after { content: " ▸"; }
+  .sidebar-toggle[aria-expanded="true"]::after { content: " ▴"; }
 }
 
 /* Newer browsers measure the viewport without the phone's own toolbars, which

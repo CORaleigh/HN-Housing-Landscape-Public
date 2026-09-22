@@ -625,7 +625,11 @@
         });
         const apply = () => {
           if (small.matches) {
-            if (!btn.isConnected) section.insertAdjacentElement("afterend", btn);
+            /* Inside the section, after the panel in the page's own order. The
+             * section is reversed on small screens, so on screen this lands
+             * between the map and the panel: the button labels what opens under
+             * it, rather than sitting below what it opened. */
+            if (!btn.isConnected) sidebar.insertAdjacentElement("afterend", btn);
             if (!sidebar.hasAttribute("data-collapsed")) sidebar.setAttribute("data-collapsed", "true");
           } else {
             btn.remove();
