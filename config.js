@@ -352,7 +352,9 @@ export const UI = {
     "Sources: HN_Production_By_Year, HN_Funding_By_Year, HN_Development_Projects, "
     + "HN_Bond_Category_Totals, HN_Bond_By_Fiscal_Year, HN_Bond_Projects and "
     + "HN_City_Housing_Development, published from the Housing and Community Development "
-    + "Department's and Finance's own records. Completed units exclude pipeline. "
+    + "Department's and Finance's own records. "
+    /* "Completed units exclude pipeline." dropped, Samantha, 22 September 2026:
+     * the bond section no longer shows completed or pipeline status. */
     + "City of Raleigh Housing and Community Development "
     + "(housing@raleighnc.gov).",
 
