@@ -410,25 +410,29 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
    pushed the page sideways so every section scrolled horizontally.
    ========================================================================== */
 @media (max-width: 900px) {
-  /* Map first, filters under it. The panel is tall, and on a phone nobody
-     should have to scroll past every filter to reach the map. Reversing the
-     flex direction changes only the order on screen; the reading order for
-     screen readers still follows the page itself. */
+  /* Map first, filters under it, and the map stays put while they scroll. The
+     panel is moved after the map by the page itself (see the small-screen block
+     in the script), so the order here is plain. Pinning the map is what lets
+     someone change a filter and watch the pins change without scrolling back. */
   .map-section {
-    flex-direction: column-reverse;
+    flex-direction: column;
     height: auto;
     min-height: 0;
   }
   .main {
-    height: 60vh;
-    min-height: 320px;
+    position: sticky;
+    top: var(--header-h);
+    height: 46vh;
+    min-height: 240px;
+    z-index: 6;
+    background: var(--white);
+    border-bottom: 3px solid var(--leaf-green);
   }
   .sidebar {
     width: 100%;
     flex: 0 0 auto;
     max-width: none;
     border-right: 0;
-    border-top: 1px solid var(--border);
     overflow-y: visible;
   }
   /* The whole panel folds away behind one button, so the map and the charts
@@ -436,11 +440,16 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
      only at this width, so nothing changes on a laptop. */
   .sidebar[data-collapsed="true"] { display: none; }
   .sidebar-toggle {
+    /* Rides just under the pinned map, so the panel can be closed from anywhere
+       in it without scrolling back to the top. */
+    position: sticky;
+    top: calc(var(--header-h) + 46vh);
+    z-index: 6;
     display: block; width: 100%; box-sizing: border-box;
     font: inherit; font-size: .9rem; font-weight: 600; text-align: left;
     padding: 11px 16px; cursor: pointer;
     color: var(--raleigh-green); background: var(--green-tint-alt);
-    border: 0; border-top: 1px solid var(--border);
+    border: 0; border-bottom: 1px solid var(--border);
   }
   /* Down means "this opens below"; up means "close it". The arrow follows the
      state rather than always pointing down. */
@@ -451,7 +460,10 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
 /* Newer browsers measure the viewport without the phone's own toolbars, which
    otherwise crop the map. Same value, better behaved. */
 @supports (height: 100dvh) {
-  @media (max-width: 900px) { .main { height: 60dvh; } }
+  @media (max-width: 900px) {
+    .main { height: 46dvh; }
+    .sidebar-toggle { top: calc(var(--header-h) + 46dvh); }
+  }
 }
 
 @media (max-width: 640px) {
@@ -487,6 +499,11 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
    the map runs off the bottom of the screen on every landscape phone. */
 @media (orientation: landscape) and (max-height: 520px) {
   .map-section { min-height: 0; }
+  /* Nothing to pin on a screen this short: half of it is not enough map to be
+     worth keeping, and it would leave a filter list two lines tall. The map
+     scrolls normally here and the panel starts folded. */
+  .main { position: static; height: 60vh; min-height: 200px; border-bottom: 0; }
+  .sidebar-toggle { position: static; }
   /* The masthead is sticky and the screen is short, so a second row of links
      would eat a third of it. */
   .app-header { height: var(--header-h); flex-wrap: nowrap; }
@@ -495,5 +512,7 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
 }
 
 /* Nothing on the page may push it sideways; wide tables scroll inside their
-   own box instead. */
+   own box instead. `clip` where it exists: `hidden` makes the page a scroll
+   container, which switches off the pinned map above. */
 html, body { overflow-x: hidden; }
+@supports (overflow-x: clip) { html, body { overflow-x: clip; } }

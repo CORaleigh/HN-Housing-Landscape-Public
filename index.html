@@ -601,16 +601,26 @@
         m.name = "robots"; m.content = "noindex, nofollow, noarchive";
         document.head.appendChild(m);
       }
-      /* ---- small screens: fold the filter panel behind a button ---------- *
+      /* ---- small screens: pin the map, put the filters under it ---------- *
        * Added 22 September 2026, once the dashboard was live and being opened on
        * phones. Only below 900px, where the panel and the map cannot sit side by
-       * side; at any larger size the page is exactly as it was. The panel starts
-       * folded so the map and the charts are close together.                   */
+       * side; at any larger size the page is exactly as it was.
+       *
+       * The panel is MOVED after the map in the page itself rather than reversed
+       * by CSS, so that the map can be sticky and so the reading order matches
+       * what is on screen. The map then stays put while the filters scroll under
+       * it, and a filter and its result are visible at the same time. The panel
+       * starts open for that reason; on a screen too short to pin anything (a
+       * phone held sideways) it starts folded instead.                         */
       (() => {
         const sidebar = document.querySelector(".sidebar");
         const section = document.querySelector(".map-section");
         if (!sidebar || !section) return;
         const small = window.matchMedia("(max-width: 900px)");
+        /* Too short to give the map half the screen and still show a filter: a
+         * phone held sideways. There the map is not pinned and the panel starts
+         * folded, which is what this looked like before the map was pinned. */
+        const shortScreen = window.matchMedia("(max-height: 520px)");
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "sidebar-toggle";
@@ -625,15 +635,16 @@
         });
         const apply = () => {
           if (small.matches) {
-            /* Inside the section, after the panel in the page's own order. The
-             * section is reversed on small screens, so on screen this lands
-             * between the map and the panel: the button labels what opens under
-             * it, rather than sitting below what it opened. */
-            if (!btn.isConnected) sidebar.insertAdjacentElement("afterend", btn);
-            if (!sidebar.hasAttribute("data-collapsed")) sidebar.setAttribute("data-collapsed", "true");
+            if (section.lastElementChild !== sidebar) section.appendChild(sidebar);
+            if (!btn.isConnected) sidebar.insertAdjacentElement("beforebegin", btn);
+            if (!sidebar.hasAttribute("data-collapsed")) {
+              sidebar.setAttribute("data-collapsed", shortScreen.matches ? "true" : "false");
+              btn.setAttribute("aria-expanded", shortScreen.matches ? "false" : "true");
+            }
           } else {
             btn.remove();
             sidebar.removeAttribute("data-collapsed");
+            if (section.firstElementChild !== sidebar) section.insertBefore(sidebar, section.firstElementChild);
           }
         };
         apply();
