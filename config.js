@@ -276,9 +276,9 @@ export const UI = {
     'AMI affordability breakdowns show only for <strong>Complete</strong> development ' +
     'projects (per HCD rules). City funding is broken out by the fund that paid for it; ' +
     'where the source records a single figure without naming a fund, it is shown as ' +
-    '<strong>Fund not recorded in the source</strong> rather than assigned to a fund. ' +
-    'Mapped point counts are geometry and <strong>do not reconcile</strong> to the ' +
-    'production totals in the charts below.',
+    '<strong>Fund not recorded in the source</strong> rather than assigned to a fund.',
+  /* Samantha, 18 September 2026: the sentence on mapped point counts not
+   * reconciling to the production totals is dropped here and from the footer. */
 
   deidNote: "",
 
@@ -353,8 +353,7 @@ export const UI = {
     + "HN_Bond_Category_Totals, HN_Bond_By_Fiscal_Year, HN_Bond_Projects and "
     + "HN_City_Housing_Development, published from the Housing and Community Development "
     + "Department's and Finance's own records. Completed units exclude pipeline. "
-    + "Mapped point counts are geometry-derived and will not reconcile to the production "
-    + "tables. City of Raleigh Housing and Community Development "
+    + "City of Raleigh Housing and Community Development "
     + "(housing@raleighnc.gov).",
 
   sidebarFooterHtml:
