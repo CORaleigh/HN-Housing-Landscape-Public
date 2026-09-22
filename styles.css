@@ -399,3 +399,87 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
 .attr-table tbody tr:nth-child(even) { background: #fafafa; }
 .attr-table tbody tr:hover { background: #eef4ea; }
 .attr-table .nd { color: #999; font-style: italic; }
+
+
+/* ==========================================================================
+   Small screens: phones, small Chromebooks, and tablets held upright.
+   Tested at 390x844 (phone), 820x1180 (iPad upright) and 1366x768 (Chromebook)
+   on 22 September 2026, after the dashboard went live and was reached from a
+   phone. Two things broke below roughly 900px: the map kept only what the
+   340px filter panel left it, down to 50px on a phone, and the masthead links
+   pushed the page sideways so every section scrolled horizontally.
+   ========================================================================== */
+@media (max-width: 900px) {
+  /* Map first, filters under it. The panel is tall, and on a phone nobody
+     should have to scroll past every filter to reach the map. Reversing the
+     flex direction changes only the order on screen; the reading order for
+     screen readers still follows the page itself. */
+  .map-section {
+    flex-direction: column-reverse;
+    height: auto;
+    min-height: 0;
+  }
+  .main {
+    height: 60vh;
+    min-height: 320px;
+  }
+  .sidebar {
+    width: 100%;
+    flex: 0 0 auto;
+    max-width: none;
+    border-right: 0;
+    border-top: 1px solid var(--border);
+    overflow-y: visible;
+  }
+  /* The whole panel folds away behind one button, so the map and the charts
+     stay within a screen or two of each other. The button is added by the page
+     only at this width, so nothing changes on a laptop. */
+  .sidebar[data-collapsed="true"] { display: none; }
+  .sidebar-toggle {
+    display: block; width: 100%; box-sizing: border-box;
+    font: inherit; font-size: .9rem; font-weight: 600; text-align: left;
+    padding: 11px 16px; cursor: pointer;
+    color: var(--raleigh-green); background: var(--green-tint-alt);
+    border: 0; border-top: 1px solid var(--border);
+  }
+  .sidebar-toggle::after { content: " ▾"; }
+  .sidebar-toggle[aria-expanded="false"]::after { content: " ▸"; }
+}
+
+/* Newer browsers measure the viewport without the phone's own toolbars, which
+   otherwise crop the map. Same value, better behaved. */
+@supports (height: 100dvh) {
+  @media (max-width: 900px) { .main { height: 60dvh; } }
+}
+
+@media (max-width: 640px) {
+  /* The masthead stops being one row. Without this the three section links run
+     off the right edge and take the whole page with them. */
+  .app-header {
+    height: auto; min-height: var(--header-h);
+    flex-wrap: wrap; row-gap: 4px; padding: 8px 12px;
+  }
+  .app-header img.logo { height: 30px; }
+  .app-header .title { font-size: 1rem; }
+  .app-header .title small { font-size: .68rem; }
+  .app-header nav { margin-left: 0; width: 100%; gap: 4px; }
+  .app-header nav a { flex: 1 1 0; text-align: center; font-size: .8rem; padding: 6px 4px; }
+  /* A sticky band under a masthead that is now two rows tall would cover the
+     content it labels. */
+  .section-band { position: static; }
+  .section-band h1 { font-size: 1.15rem; }
+  .dash-wrap { padding-left: 12px; padding-right: 12px; }
+  .card { padding: 12px 12px; }
+  .kpi { padding: 11px 12px; }
+  .kpi .num { font-size: 1.45rem; }
+  /* Two counters to a row rather than one very wide one. */
+  .kpi-row { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 10px; }
+  .welcome-modal, .info-modal { padding: 16px 14px; max-height: 88vh; }
+  /* A fixed-height chart is unreadable on a narrow screen when it also has to
+     hold a legend. */
+  .card .chart-box { height: 240px; }
+}
+
+/* Nothing on the page may push it sideways; wide tables scroll inside their
+   own box instead. */
+html, body { overflow-x: hidden; }

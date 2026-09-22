@@ -597,6 +597,50 @@
         m.name = "robots"; m.content = "noindex, nofollow, noarchive";
         document.head.appendChild(m);
       }
+      /* ---- small screens: fold the filter panel behind a button ---------- *
+       * Added 22 September 2026, once the dashboard was live and being opened on
+       * phones. Only below 900px, where the panel and the map cannot sit side by
+       * side; at any larger size the page is exactly as it was. The panel starts
+       * folded so the map and the charts are close together.                   */
+      (() => {
+        const sidebar = document.querySelector(".sidebar");
+        const section = document.querySelector(".map-section");
+        if (!sidebar || !section) return;
+        const small = window.matchMedia("(max-width: 900px)");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "sidebar-toggle";
+        btn.textContent = "Map filters and layers";
+        btn.setAttribute("aria-expanded", "false");
+        btn.setAttribute("aria-controls", "mapSidebar");
+        sidebar.id = sidebar.id || "mapSidebar";
+        btn.addEventListener("click", () => {
+          const open = sidebar.getAttribute("data-collapsed") !== "false";
+          sidebar.setAttribute("data-collapsed", open ? "false" : "true");
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+        const apply = () => {
+          if (small.matches) {
+            if (!btn.isConnected) section.insertAdjacentElement("afterend", btn);
+            if (!sidebar.hasAttribute("data-collapsed")) sidebar.setAttribute("data-collapsed", "true");
+          } else {
+            btn.remove();
+            sidebar.removeAttribute("data-collapsed");
+          }
+        };
+        apply();
+        small.addEventListener("change", apply);
+
+        /* The "About" boxes open by default, which is right on a laptop and wrong
+         * on a phone: the map one alone runs past 1,000px, so the map itself
+         * starts below the fold. Closed on a small screen the first time the page
+         * loads; the reader opens whichever one they want, and a laptop is
+         * untouched. */
+        if (small.matches) {
+          document.querySelectorAll("details.info-box[open]").forEach(d => { d.open = false; });
+        }
+      })();
+
       const versionBadge = document.getElementById("versionBadge");
       if (versionBadge && UI.versionLabel) {
         versionBadge.textContent = UI.versionLabel;
