@@ -601,61 +601,65 @@
         m.name = "robots"; m.content = "noindex, nofollow, noarchive";
         document.head.appendChild(m);
       }
-      /* ---- small screens: pin the map, put the filters under it ---------- *
-       * Added 22 September 2026, once the dashboard was live and being opened on
-       * phones. Only below 900px, where the panel and the map cannot sit side by
-       * side; at any larger size the page is exactly as it was.
+      /* ---- small screens: the filter panel slides over the map ----------- *
+       * Below 900px the filter panel cannot sit beside the map: at 340px fixed it
+       * left a phone about 50px of map. The stylesheet lays it over the map
+       * instead, the way an ArcGIS web app's side panel behaves, and this adds
+       * the tab that slides it in and out. The map keeps the full width and
+       * height of the section either way, and nothing is stacked below it.
        *
-       * The panel is MOVED after the map in the page itself rather than reversed
-       * by CSS, so that the map can be sticky and so the reading order matches
-       * what is on screen. The map then stays put while the filters scroll under
-       * it, and a filter and its result are visible at the same time. The panel
-       * starts open for that reason; on a screen too short to pin anything (a
-       * phone held sideways) it starts folded instead.                         */
+       * Everything about WHERE things sit is CSS: no element is moved in the
+       * page, so rotating a phone or resizing a window cannot leave the panel on
+       * the wrong side or a stray tab behind. This only adds a button and one
+       * attribute, both ignored by the stylesheet above 900px.
+       * (Mary, 22 September 2026.)                                            */
       (() => {
         const sidebar = document.querySelector(".sidebar");
         const section = document.querySelector(".map-section");
         if (!sidebar || !section) return;
         const small = window.matchMedia("(max-width: 900px)");
-        /* Too short to give the map half the screen and still show a filter: a
-         * phone held sideways. There the map is not pinned and the panel starts
-         * folded, which is what this looked like before the map was pinned. */
-        const shortScreen = window.matchMedia("(max-height: 520px)");
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "sidebar-toggle";
-        btn.textContent = "Map filters and layers";
-        btn.setAttribute("aria-expanded", "false");
-        btn.setAttribute("aria-controls", "mapSidebar");
         sidebar.id = sidebar.id || "mapSidebar";
-        btn.addEventListener("click", () => {
-          const open = sidebar.getAttribute("data-collapsed") !== "false";
-          sidebar.setAttribute("data-collapsed", open ? "false" : "true");
-          btn.setAttribute("aria-expanded", open ? "true" : "false");
-        });
-        const apply = () => {
-          if (small.matches) {
-            if (section.lastElementChild !== sidebar) section.appendChild(sidebar);
-            if (!btn.isConnected) sidebar.insertAdjacentElement("beforebegin", btn);
-            if (!sidebar.hasAttribute("data-collapsed")) {
-              sidebar.setAttribute("data-collapsed", shortScreen.matches ? "true" : "false");
-              btn.setAttribute("aria-expanded", shortScreen.matches ? "false" : "true");
-            }
-          } else {
-            btn.remove();
-            sidebar.removeAttribute("data-collapsed");
-            if (section.firstElementChild !== sidebar) section.insertBefore(sidebar, section.firstElementChild);
-          }
+        section.setAttribute("data-panel", "closed");
+
+        const isOpen = () => section.getAttribute("data-panel") === "open";
+        const handle = document.createElement("button");
+        handle.type = "button";
+        handle.className = "sidebar-handle";
+        handle.setAttribute("aria-controls", "mapSidebar");
+        const label = () => {
+          handle.setAttribute("aria-expanded", isOpen() ? "true" : "false");
+          handle.setAttribute("aria-label", isOpen() ? "Hide map filters and layers"
+                                                     : "Show map filters and layers");
+          handle.innerHTML = isOpen()
+            ? "<span aria-hidden='true'>\u2039</span>"
+            : "<span aria-hidden='true'>\u203A</span><span class='sidebar-handle-text'>Filters</span>";
         };
-        apply();
-        small.addEventListener("change", apply);
+        const setPanel = (open) => {
+          section.setAttribute("data-panel", open ? "open" : "closed");
+          label();
+          if (open) sidebar.scrollTop = 0;
+        };
+        handle.addEventListener("click", () => setPanel(!isOpen()));
+        /* The strip of map left showing closes it, which is what this pattern
+         * leads people to expect, and Escape does too. */
+        section.addEventListener("click", (e) => {
+          if (small.matches && isOpen() && !sidebar.contains(e.target) && !handle.contains(e.target)
+              && e.target !== handle) setPanel(false);
+        }, true);
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && small.matches && isOpen()) setPanel(false);
+        });
+        /* Closed again whenever the screen grows past the point where it overlays
+         * anything, so going back to a phone never starts mid-state. */
+        small.addEventListener("change", () => { if (!small.matches) setPanel(false); });
+        section.appendChild(handle);
+        label();
 
         /* The "About" boxes open by default, which is right on a laptop and wrong
          * on a phone: the map one alone runs past 1,000px, so the map itself
          * starts below the fold. Closed on a small screen the first time the page
          * loads, except the one marked data-keep-open, which introduces the page
-         * and costs little room. The reader opens whichever others they want, and
-         * a laptop is untouched. (Mary, 22 September 2026.) */
+         * and costs little room. */
         if (small.matches) {
           document.querySelectorAll("details.info-box[open]:not([data-keep-open])")
             .forEach(d => { d.open = false; });

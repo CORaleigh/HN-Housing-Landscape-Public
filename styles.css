@@ -403,66 +403,80 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
 
 /* ==========================================================================
    Small screens: phones, small Chromebooks, and tablets held upright.
-   Tested at 390x844 (phone), 820x1180 (iPad upright) and 1366x768 (Chromebook)
-   on 22 September 2026, after the dashboard went live and was reached from a
-   phone. Two things broke below roughly 900px: the map kept only what the
-   340px filter panel left it, down to 50px on a phone, and the masthead links
-   pushed the page sideways so every section scrolled horizontally.
+   Checked at 360x640, 390x844, 768x1024, 820x1180, 844x390 and 932x430 on
+   22 September 2026, after the dashboard went live and was reached from a
+   phone. Below roughly 900px the 340px filter panel left a phone about 50px of
+   map, and the masthead links pushed the whole page sideways.
+
+   The panel now slides over the map instead of sitting beside or below it, and
+   the map keeps the full width and height of the section either way.
    ========================================================================== */
+/* Hidden at every size but the ones below, where the stylesheet lays the panel
+   over the map. The button is always in the page; only this decides if it shows. */
+.sidebar-handle { display: none; }
+
 @media (max-width: 900px) {
-  /* Map first, filters under it, and the map stays put while they scroll. The
-     panel is moved after the map by the page itself (see the small-screen block
-     in the script), so the order here is plain. Pinning the map is what lets
-     someone change a filter and watch the pins change without scrolling back. */
   .map-section {
+    position: relative;
     flex-direction: column;
     height: auto;
     min-height: 0;
+    overflow: hidden;              /* the panel slides out of view, not the page */
   }
-  .main {
-    position: sticky;
-    top: var(--header-h);
-    height: 46vh;
-    min-height: 240px;
-    z-index: 6;
-    background: var(--white);
-    border-bottom: 3px solid var(--leaf-green);
-  }
+  .main { height: 72vh; min-height: 300px; }
+
   .sidebar {
-    width: 100%;
-    flex: 0 0 auto;
-    max-width: none;
-    border-right: 0;
-    overflow-y: visible;
+    position: absolute; top: 0; bottom: 0; left: 0; z-index: 8;
+    width: min(86%, 360px); flex: 0 0 auto; max-width: none;
+    border-right: 1px solid var(--border);
+    box-shadow: 4px 0 14px rgba(0,0,0,.18);
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    transform: translateX(-102%);
+    transition: transform .22s ease-out;
   }
-  /* The whole panel folds away behind one button, so the map and the charts
-     stay within a screen or two of each other. The button is added by the page
-     only at this width, so nothing changes on a laptop. */
-  .sidebar[data-collapsed="true"] { display: none; }
-  .sidebar-toggle {
-    /* Rides just under the pinned map, so the panel can be closed from anywhere
-       in it without scrolling back to the top. */
-    position: sticky;
-    top: calc(var(--header-h) + 46vh);
-    z-index: 6;
-    display: block; width: 100%; box-sizing: border-box;
-    font: inherit; font-size: .9rem; font-weight: 600; text-align: left;
-    padding: 11px 16px; cursor: pointer;
-    color: var(--raleigh-green); background: var(--green-tint-alt);
-    border: 0; border-bottom: 1px solid var(--border);
+  .map-section[data-panel="open"] .sidebar { transform: none; }
+
+  /* The tab that opens it, on the left edge of the map. It travels with the
+     panel, so the control that opened it is the control that closes it. */
+  .sidebar-handle {
+    position: absolute; top: 12px; left: 0; z-index: 9;
+    display: flex !important; align-items: center; gap: 6px;
+    font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer;
+    padding: 9px 11px; color: var(--white); background: var(--raleigh-green);
+    border: 0; border-radius: 0 6px 6px 0; box-shadow: 2px 2px 6px rgba(0,0,0,.25);
+    transition: transform .22s ease-out;
   }
-  /* Down means "this opens below"; up means "close it". The arrow follows the
-     state rather than always pointing down. */
-  .sidebar-toggle::after { content: " ▾"; }
-  .sidebar-toggle[aria-expanded="true"]::after { content: " ▴"; }
+  .map-section[data-panel="open"] .sidebar-handle {
+    transform: translateX(min(86vw, 360px));
+    background: var(--mid-green);
+  }
+  .sidebar-handle-text { letter-spacing: .3px; }
+
+  /* Someone who prefers less movement gets the same panel without the slide. */
+  @media (prefers-reduced-motion: reduce) {
+    .sidebar, .sidebar-handle { transition: none; }
+  }
 }
 
-/* Newer browsers measure the viewport without the phone's own toolbars, which
-   otherwise crop the map. Same value, better behaved. */
 @supports (height: 100dvh) {
-  @media (max-width: 900px) {
-    .main { height: 46dvh; }
-    .sidebar-toggle { top: calc(var(--header-h) + 46dvh); }
+  @media (max-width: 900px) { .main { height: 72dvh; } }
+}
+
+/* A phone held sideways. The section carries a 520px floor for laptops, which is
+   taller than the whole screen here, so the map ran off the bottom. The map
+   takes what the screen has instead, and the masthead stays on one row. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .map-section { min-height: 0; }
+  .main { height: calc(100vh - var(--header-h) - 4px); min-height: 180px; }
+  .app-header { height: var(--header-h); flex-wrap: nowrap; }
+  .app-header nav { margin-left: auto; width: auto; }
+  .app-header nav a { flex: 0 0 auto; }
+  /* Sideways there is no room for a tall tab, and the panel needs every line. */
+  .sidebar-handle { top: 8px; padding: 7px 10px; font-size: .78rem; }
+}
+@supports (height: 100dvh) {
+  @media (orientation: landscape) and (max-height: 520px) {
+    .main { height: calc(100dvh - var(--header-h) - 4px); }
   }
 }
 
@@ -494,25 +508,7 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
   .card .chart-box { height: 240px; }
 }
 
-/* A phone held sideways: wide enough to keep the panel beside the map, but far
-   too short for the 520px floor the section carries for laptops. Without this
-   the map runs off the bottom of the screen on every landscape phone. */
-@media (orientation: landscape) and (max-height: 520px) {
-  .map-section { min-height: 0; }
-  /* Nothing to pin on a screen this short: half of it is not enough map to be
-     worth keeping, and it would leave a filter list two lines tall. The map
-     scrolls normally here and the panel starts folded. */
-  .main { position: static; height: 60vh; min-height: 200px; border-bottom: 0; }
-  .sidebar-toggle { position: static; }
-  /* The masthead is sticky and the screen is short, so a second row of links
-     would eat a third of it. */
-  .app-header { height: var(--header-h); flex-wrap: nowrap; }
-  .app-header nav { margin-left: auto; width: auto; }
-  .app-header nav a { flex: 0 0 auto; }
-}
-
 /* Nothing on the page may push it sideways; wide tables scroll inside their
-   own box instead. `clip` where it exists: `hidden` makes the page a scroll
-   container, which switches off the pinned map above. */
+   own box instead. */
 html, body { overflow-x: hidden; }
 @supports (overflow-x: clip) { html, body { overflow-x: clip; } }
