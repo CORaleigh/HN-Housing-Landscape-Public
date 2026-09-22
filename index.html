@@ -97,7 +97,11 @@
          the multi-step welcome pop-up; each is collapsible so it can be folded
          away once read, and the copy matches the approved language doc. -->
     <div class="info-wrap">
-      <details class="info-box" open>
+      <!-- data-keep-open: the one About box that stays open on a phone or tablet.
+           It is short, it is the first thing on the page, and it says what the
+           dashboard is. The other three are closed at that size (see the small
+           screen block in the script below). -->
+      <details class="info-box" open data-keep-open>
         <summary>City of Raleigh Housing Production Dashboard</summary>
         <div class="info-box-body">
           <p>Welcome to the City of Raleigh's Housing Production Dashboard. In this dashboard you will find demographic data and housing production data for the City of Raleigh.</p>
@@ -634,10 +638,12 @@
         /* The "About" boxes open by default, which is right on a laptop and wrong
          * on a phone: the map one alone runs past 1,000px, so the map itself
          * starts below the fold. Closed on a small screen the first time the page
-         * loads; the reader opens whichever one they want, and a laptop is
-         * untouched. */
+         * loads, except the one marked data-keep-open, which introduces the page
+         * and costs little room. The reader opens whichever others they want, and
+         * a laptop is untouched. (Mary, 22 September 2026.) */
         if (small.matches) {
-          document.querySelectorAll("details.info-box[open]").forEach(d => { d.open = false; });
+          document.querySelectorAll("details.info-box[open]:not([data-keep-open])")
+            .forEach(d => { d.open = false; });
         }
       })();
 
