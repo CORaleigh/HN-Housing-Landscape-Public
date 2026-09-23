@@ -80,6 +80,10 @@
       })();
     </script>
 
+    <!-- WCAG 2.2 2.4.1: a keyboard user can reach the content without tabbing
+         through the masthead and the whole filter panel. -->
+    <a class="skip-link" href="#dash-top">Skip to the housing figures</a>
+
     <header class="app-header">
       <img class="logo" src="./raleigh_horizontal.png" alt="City of Raleigh" />
       <div class="title">Housing Landscape
@@ -92,6 +96,8 @@
         <a href="#bond-top">2020 Housing Bond</a>
       </nav>
     </header>
+
+    <main id="mainContent">
 
     <!-- Section "About" boxes. These carry the guidance that used to sit behind
          the multi-step welcome pop-up; each is collapsible so it can be folded
@@ -201,9 +207,9 @@
               <input type="range" id="unitMaxR" min="0" max="100" step="1" value="100" aria-label="Maximum units" />
             </div>
             <div class="range-inputs">
-              <input type="number" id="unitMinN" min="0" placeholder="min" />
+              <input type="number" id="unitMinN" min="0" placeholder="min" aria-label="Fewest units per project" />
               <span>to</span>
-              <input type="number" id="unitMaxN" min="0" placeholder="max" />
+              <input type="number" id="unitMaxN" min="0" placeholder="max" aria-label="Most units per project" />
             </div>
             <div class="range-label" id="unitLabel"></div>
           </div>
@@ -323,7 +329,7 @@
       <div class="card-grid">
         <div class="card wide">
           <h3 style="margin: 0 0 1rem;">Completed units by fiscal year (by category)</h3>
-          <div class="chart-box"><canvas id="stacked"></canvas></div>
+          <div class="chart-box"><canvas id="stacked" role="img" aria-label="Bar chart: completed units by fiscal year, split by category. The same figures are in the table below it."></canvas></div>
         </div>
       </div>
 
@@ -331,7 +337,7 @@
       <div><span class="src-badge">Source: Housing Production Tracker (aggregate table)</span></div>
       <div class="caveat" style="margin-top:8px;">A "0" in this table means the aggregate table recorded no completed units for that program in that fiscal year — it does not distinguish a true zero from a not-yet-reported figure, since the source table has no separate blank/null state.</div>
       <div class="card wide" style="margin-top:12px;">
-        <div class="table-scroll"><table class="data-table" id="catTable"></table></div>
+        <div class="table-scroll"><table class="data-table" id="catTable" aria-label="Completed units by programme and fiscal year"></table></div>
         <div class="note" style="margin-top:10px;">"Sum of … (yearly and total)" for each program —
         Rental Units Constructed, Rental Units Preserved, Home Repair, Homebuyer Assistance, and Other Housing Impact.
         <div id="catTableExtraNote" hidden style="margin-top:6px;"></div></div>
@@ -340,18 +346,18 @@
       <div class="card-grid">
         <div class="card">
           <h3>Total completed by fiscal year</h3>
-          <div class="chart-box"><canvas id="totalByYear"></canvas></div>
+          <div class="chart-box"><canvas id="totalByYear" role="img" aria-label="Bar chart: total completed units in each fiscal year. The same figures are in the table above it."></canvas></div>
         </div>
         <div class="card">
           <h3 style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
             <span>Share of completed units by category</span>
-            <select id="shareYear" style="font:inherit;font-size:.8rem;font-weight:400;padding:4px 6px;border:1px solid var(--border);border-radius:4px;"><option value="">All years</option></select>
+            <select id="shareYear" aria-label="Fiscal year for the share of completed units" style="font:inherit;font-size:.8rem;font-weight:400;padding:4px 6px;border:1px solid var(--border);border-radius:4px;"><option value="">All years</option></select>
           </h3>
-          <div class="chart-box"><canvas id="share"></canvas></div>
+          <div class="chart-box"><canvas id="share" role="img" aria-label="Doughnut chart: the share of completed units each category accounts for. The same figures are in the table above it."></canvas></div>
         </div>
         <div class="card">
           <h3>Cumulative units completed</h3>
-          <div class="chart-box"><canvas id="cumulative"></canvas></div>
+          <div class="chart-box"><canvas id="cumulative" role="img" aria-label="Line chart: completed units added up across fiscal years. The same figures are in the table above it."></canvas></div>
         </div>
       </div>
 
@@ -362,7 +368,7 @@
            so DOM order and code order differ on purpose. -->
       <div class="card wide" style="margin-top:18px;">
         <h3 style="margin:0 0 12px 0;">Completed city housing development projects</h3>
-        <div class="table-scroll" style="max-height:280px;overflow-x:auto;"><table class="data-table" id="completedTable"></table></div>
+        <div class="table-scroll" style="max-height:280px;overflow-x:auto;"><table class="data-table" id="completedTable" aria-label="Completed city housing development projects"></table></div>
         <div class="note" id="completedTableNote" style="margin-top:10px;"></div>
       </div>
 
@@ -374,7 +380,7 @@
       <div><span class="src-badge">Source: City Housing Development, Home Repair, and Homebuyer Assistance layers (Funding Source, Total Units, City of Raleigh Loan Amount, AMI bands)</span></div>
       <div class="caveat" id="fundingCaveat" style="margin-top:8px;"></div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 16px;">
-        <label style="font-weight:600;font-size:.85rem;">Project type:</label>
+        <label for="fundingProjectType" style="font-weight:600;font-size:.85rem;">Project type:</label>
         <select id="fundingProjectType" style="padding:7px 8px;font:inherit;font-size:.85rem;border:1px solid var(--border);border-radius:4px;">
           <option value="">All types</option>
         </select>
@@ -382,7 +388,7 @@
       <div class="card-grid">
         <div class="card">
           <h3 style="margin:0 0 12px 0;">Total funding by year</h3>
-          <div class="chart-box" style="height: 300px;"><canvas id="fundingByYear"></canvas></div>
+          <div class="chart-box" style="height: 300px;"><canvas id="fundingByYear" role="img" aria-label="Bar chart: total city funding by fiscal year."></canvas></div>
           <!-- Filled in only where a build reads a prepared funding table, since
                only then is there a documented basis to explain. -->
           <div class="note" id="fundingBasisNote" hidden></div>
@@ -399,7 +405,7 @@
       <div class="kpi-row" id="pipelineKpis" style="margin-top:14px;"></div>
       <div class="card" style="min-width:0;">
         <h3 style="margin:0 0 12px 0;">Pipeline projects</h3>
-        <div class="table-scroll" style="max-height:280px;overflow-x:auto;"><table class="data-table" id="pipelineTable"></table></div>
+        <div class="table-scroll" style="max-height:280px;overflow-x:auto;"><table class="data-table" id="pipelineTable" aria-label="Housing development projects in the pipeline"></table></div>
       </div>
       </div><!-- /pipelineSection -->
 
@@ -433,7 +439,7 @@
       <div class="kpi-row" id="distKpis" style="margin-top:14px;"></div>
       <div class="card wide">
         <h3 id="distChartTitle">Units by district and program</h3>
-        <div class="chart-box"><canvas id="distChart"></canvas></div>
+        <div class="chart-box"><canvas id="distChart" role="img" aria-label="Bar chart: units by council district and programme."></canvas></div>
         <div class="note" id="distScopeNote" hidden></div>
       </div>
       </div>
@@ -474,12 +480,12 @@
       <div class="card-grid" style="margin-top:12px;">
         <div class="card bond">
           <h4>2020 Bond funding — committed vs. available</h4>
-          <div class="chart-box" style="height:180px;"><canvas id="bondFundingGauge"></canvas></div>
+          <div class="chart-box" style="height:180px;"><canvas id="bondFundingGauge" role="img" aria-label="Gauge: 2020 Bond funding committed against funding available. The two figures are stated beneath it."></canvas></div>
           <div class="kpi-row" id="bondFundingKpis" style="margin-top:10px;"></div>
         </div>
         <div class="card bond">
           <h4>Committed funding by category</h4>
-          <div class="chart-box" style="height:260px;"><canvas id="bondCommittedByCategory"></canvas></div>
+          <div class="chart-box" style="height:260px;"><canvas id="bondCommittedByCategory" role="img" aria-label="Pie chart: 2020 Bond funding committed, by category."></canvas></div>
         </div>
       </div>
 
@@ -504,7 +510,7 @@
           <h4>2020 Bond housing development units by category</h4>
           <div class="split-chart-kpis">
             <div>
-              <div class="chart-box"><canvas id="bondDevByCategory"></canvas></div>
+              <div class="chart-box"><canvas id="bondDevByCategory" role="img" aria-label="Pie chart: 2020 Bond housing development units, by category. The total is stated beneath it."></canvas></div>
               <!-- Units come from the Bond 2020 Totals table rather than the project
                    rows, so the Grosvenor single-count rule is applied. Populated by
                    renderBondDev(). -->
@@ -524,12 +530,14 @@
           <!-- Status is driven by the section-level filter at the top now, so the
                per-table selector that used to live here has been removed. -->
           <h4>2020 Bond housing development projects</h4>
-          <div class="table-scroll"><table class="data-table" id="bondDevList"></table></div>
+          <div class="table-scroll"><table class="data-table" id="bondDevList" aria-label="2020 Bond housing development projects"></table></div>
         </div>
       </div>
 
       <div class="footer-note" id="footer"></div>
     </div>
+
+    </main>
 
     <!-- ============================== SCRIPT ============================== -->
     <script type="module">
@@ -634,10 +642,15 @@
             ? "<span aria-hidden='true'>\u2039</span>"
             : "<span aria-hidden='true'>\u203A</span><span class='sidebar-handle-text'>Filters</span>";
         };
-        const setPanel = (open) => {
+        /* Focus follows the panel: into it when it opens, back to the tab when
+         * it closes, so a keyboard user is never left behind whichever way they
+         * closed it (tab, the map, or Escape). WCAG 2.2 2.4.3. */
+        sidebar.tabIndex = -1;
+        const setPanel = (open, moveFocus) => {
           section.setAttribute("data-panel", open ? "open" : "closed");
           label();
           if (open) sidebar.scrollTop = 0;
+          if (moveFocus !== false && small.matches) (open ? sidebar : handle).focus();
         };
         handle.addEventListener("click", () => setPanel(!isOpen()));
         /* The strip of map left showing closes it, which is what this pattern
@@ -651,7 +664,7 @@
         });
         /* Closed again whenever the screen grows past the point where it overlays
          * anything, so going back to a phone never starts mid-state. */
-        small.addEventListener("change", () => { if (!small.matches) setPanel(false); });
+        small.addEventListener("change", () => { if (!small.matches) setPanel(false, false); });
         section.appendChild(handle);
         label();
 

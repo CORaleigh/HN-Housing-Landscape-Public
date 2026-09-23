@@ -16,6 +16,7 @@
   --green-tint:    #DAEFD3;
   --green-tint-alt:#F3F9EF;
   --white:         #FFFFFF;
+  --muted-text:    #595959;   /* passes 4.5:1 on white and on the light fill */
   --header-h: 60px;
   --font-body: Calibri, "Segoe UI", Candara, "Trebuchet MS", sans-serif;
 }
@@ -57,7 +58,7 @@ body {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
 }
 .info-box > summary::-webkit-details-marker { display: none; }
-.info-box > summary::after { content: "Show"; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #666; }
+.info-box > summary::after { content: "Show"; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted-text); }
 .info-box[open] > summary::after { content: "Hide"; }
 .info-box > summary:hover { text-decoration: underline; }
 .info-box-body { padding: 0 0 14px; font-size: .9rem; line-height: 1.55; }
@@ -78,11 +79,11 @@ body {
 }
 .bond-filter-bar label { font-size: .9rem; }
 .bond-filter-bar select { padding: 6px 8px; font: inherit; font-size: .85rem; border: 1px solid var(--border); border-radius: 4px; }
-.bond-filter-note { font-size: .78rem; color: #666; flex: 1 1 260px; }
+.bond-filter-note { font-size: .78rem; color: var(--muted-text); flex: 1 1 260px; }
 .status-badge {
   display: inline-block; vertical-align: middle; margin-left: 6px;
   font-size: .68rem; font-weight: 600; letter-spacing: .02em; text-transform: uppercase;
-  color: #666; background: var(--light-fill); border: 1px solid var(--border);
+  color: var(--muted-text); background: var(--light-fill); border: 1px solid var(--border);
   border-radius: 10px; padding: 2px 8px;
 }
 .status-badge-live { color: var(--raleigh-green); background: var(--green-tint); border-color: var(--leaf-green); }
@@ -159,7 +160,38 @@ body {
   padding: 7px 14px; border-radius: 4px; opacity: .85;
 }
 .app-header nav a:hover { opacity: 1; background: rgba(255,255,255,.14); }
-.app-header nav a.active { opacity: 1; background: var(--leaf-green); }
+/* Was white on leaf green, 2.75:1. The current section is now marked with a
+   rule under it instead, which leaves the text white on the masthead's own dark
+   green at 6.2:1. WCAG 1.4.3. */
+.app-header nav a.active {
+  opacity: 1; background: transparent; font-weight: 700;
+  box-shadow: inset 0 -3px 0 0 var(--chartreuse);
+  border-radius: 4px 4px 0 0;
+}
+
+/* Keyboard focus. The browser default is faint and disappears entirely on the
+   green masthead, so every focusable thing gets the same ring, and anything
+   focused is scrolled clear of the sticky masthead. WCAG 2.4.7 and 2.4.11. */
+:focus-visible {
+  outline: 3px solid var(--raleigh-green);
+  outline-offset: 2px;
+  border-radius: 3px;
+  scroll-margin-top: calc(var(--header-h) + 14px);
+}
+.app-header a:focus-visible, .sidebar-handle:focus-visible {
+  outline-color: var(--white);
+}
+.sidebar:focus-visible { outline-offset: -3px; }
+
+/* Off screen until it is tabbed to. WCAG 2.4.1. */
+.skip-link {
+  position: absolute; left: 8px; top: -60px; z-index: 60;
+  background: var(--white); color: var(--raleigh-green);
+  font-weight: 700; font-size: .9rem; padding: 10px 14px;
+  border: 2px solid var(--raleigh-green); border-radius: 0 0 6px 6px;
+  transition: top .12s ease-out;
+}
+.skip-link:focus { top: 0; }
 
 /* --- Layout: map section (sidebar + map), then dashboard below ----------- */
 .map-section {
@@ -193,14 +225,14 @@ body {
 #attrDockTabs button {
   font: inherit; font-size: .78rem; padding: 4px 10px; cursor: pointer;
   border: 1px solid var(--border); border-radius: 4px 4px 0 0;
-  background: #fff; color: #444; white-space: nowrap;
+  background: #fff; color: var(--muted-text); white-space: nowrap;
 }
 #attrDockTabs button[aria-selected="true"] {
   background: var(--raleigh-green); border-color: var(--raleigh-green); color: #fff; font-weight: 600;
 }
 #attrDockClose {
   font: inherit; font-size: .75rem; padding: 4px 9px; cursor: pointer;
-  border: 1px solid var(--border); border-radius: 4px; background: #fff; color: #444;
+  border: 1px solid var(--border); border-radius: 4px; background: #fff; color: var(--muted-text);
 }
 #attrDockBody { flex: 1 1 auto; min-height: 0; position: relative; }
 /* One table container per layer, stacked; only the selected tab is shown. */
@@ -216,7 +248,7 @@ body {
   position: sticky; top: var(--header-h); z-index: 20;
 }
 .section-band h1 { color: var(--raleigh-green); font-size: 1.4rem; margin: 0 0 2px; }
-.section-band p { margin: 0; color: #666; font-size: .88rem; }
+.section-band p { margin: 0; color: var(--muted-text); font-size: .88rem; }
 
 /* --- Sidebar sections ---------------------------------------------------- */
 .panel-section { padding: 14px 16px; border-bottom: 1px solid var(--light-fill); }
@@ -233,16 +265,24 @@ body {
   width: 100%; padding: 7px 8px; font: inherit; font-size: .85rem;
   border: 1px solid var(--border); border-radius: 4px; background: var(--white); color: var(--body-text);
 }
-.checks label { display: flex; align-items: center; gap: 8px; font-size: .85rem; margin-bottom: 6px; cursor: pointer; }
+/* WCAG 2.2 2.5.8: the box and its row are a 24px target, which also makes them
+   easier to hit on a phone. */
+.checks label {
+  display: flex; align-items: center; gap: 8px; font-size: .85rem;
+  margin-bottom: 4px; padding: 4px 2px; min-height: 24px; cursor: pointer;
+}
+.checks input[type="checkbox"], .checks input[type="radio"] {
+  width: 18px; height: 18px; flex: 0 0 auto; accent-color: var(--raleigh-green);
+}
 /* Any/All segmented control, on the label row of the filter it governs so its
    scope is unambiguous. Paired with the field label via aria-labelledby. */
 .field-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
 .field-head label { margin-bottom: 0; }
-.seg-caption { font-size: .72rem; color: #666; text-transform: uppercase; letter-spacing: .03em; margin-left: auto; }
+.seg-caption { font-size: .72rem; color: var(--muted-text); text-transform: uppercase; letter-spacing: .03em; margin-left: auto; }
 .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
 .seg-btn {
   font: inherit; font-size: .76rem; font-weight: 600; line-height: 1;
-  padding: 5px 10px; border: none; background: var(--white); color: #666; cursor: pointer;
+  padding: 5px 10px; border: none; background: var(--white); color: var(--muted-text); cursor: pointer;
 }
 .seg-btn + .seg-btn { border-left: 1px solid var(--border); }
 .seg-btn:hover { background: var(--green-tint-alt); color: var(--raleigh-green); }
@@ -284,14 +324,14 @@ button.btn:hover { filter: brightness(1.08); }
   width: 100%; padding: 6px 7px; font: inherit; font-size: .82rem;
   border: 1px solid var(--border); border-radius: 4px; color: var(--body-text);
 }
-.range-inputs span { font-size: .78rem; color: #777; }
+.range-inputs span { font-size: .78rem; color: var(--muted-text); }
 .range-label { font-size: .74rem; color: var(--raleigh-green); font-weight: 700; margin-top: 4px; }
 
 .legend-item { display: flex; align-items: center; gap: 8px; font-size: .82rem; margin-bottom: 6px; }
 .swatch { width: 14px; height: 14px; border-radius: 50%; flex: 0 0 auto; border: 1px solid rgba(0,0,0,.25); }
 
 .note {
-  font-size: .74rem; color: #6b6b6b; line-height: 1.35; background: var(--green-tint-alt);
+  font-size: .74rem; color: var(--muted-text); line-height: 1.35; background: var(--green-tint-alt);
   border: 1px solid var(--green-tint); border-radius: 4px; padding: 8px 10px; margin-top: 8px;
 }
 .note ul { margin: 6px 0 0; padding-left: 16px; }
@@ -303,7 +343,7 @@ button.btn:hover { filter: brightness(1.08); }
 /* --- Popups -------------------------------------------------------------- */
 .pop table { border-collapse: collapse; width: 100%; font-size: .82rem; }
 .pop td { padding: 2px 6px; vertical-align: top; }
-.pop td.k { color: #6b6b6b; white-space: nowrap; }
+.pop td.k { color: var(--muted-text); white-space: nowrap; }
 .pop .ami-bar { display:flex; height: 10px; border-radius: 3px; overflow: hidden; margin: 4px 0; }
 
 /* --- Dashboard ----------------------------------------------------------- */
@@ -341,7 +381,7 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
 }
 .version-badge.version-public   { background: var(--green-tint); color: var(--raleigh-green); border: 1px solid var(--leaf-green); }
 .version-badge.version-internal { background: #FDECEA; color: #A8322D; border: 1px solid #A8322D; }
-.dash-wrap .sub { color: #666; font-size: .9rem; margin-bottom: 18px; }
+.dash-wrap .sub { color: var(--muted-text); font-size: .9rem; margin-bottom: 18px; }
 .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 22px; }
 .kpi {
   background: var(--white); border: 1px solid var(--border); border-top: 4px solid var(--leaf-green);
@@ -375,7 +415,7 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
 .card.bond { border-top: 4px solid var(--amber); }
 
 .footer-note {
-  font-size: .72rem; color: #777; padding: 14px 16px; line-height: 1.4;
+  font-size: .72rem; color: var(--muted-text); padding: 14px 16px; line-height: 1.4;
   border-top: 1px solid var(--light-fill);
 }
 
