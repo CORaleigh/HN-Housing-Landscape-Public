@@ -565,6 +565,12 @@
 
     </main>
 
+    <!-- Appears once the reader is past the first screen. The page runs to about
+         6,000 pixels, and the only way back was the masthead or a long scroll. -->
+    <button type="button" id="backToTop" hidden>
+      <span aria-hidden="true">&#8593;</span> Top
+    </button>
+
     <!-- ============================== SCRIPT ============================== -->
     <script type="module">
       import {
@@ -626,6 +632,71 @@
         return (ds && typeof ds.adaptRows === "function") ? ds.adaptRows(rows) : rows;
       };
       if (!UI.showSourceNotes) document.body.classList.add("hide-source-notes");
+
+      /* ---- which section am I in, and a way back up ----------------------- *
+       * The masthead links used to keep "Map" marked however far down the page
+       * the reader had scrolled. The link for the section actually on screen is
+       * now the marked one, and a small button returns to the top once the
+       * reader is past the first screen. Both are plain DOM work and run before
+       * anything else, so neither depends on the map starting. */
+      (() => {
+        const links = [...document.querySelectorAll(".app-header nav a[href^='#']")];
+        const sections = links
+          .map(a => ({ a, el: document.getElementById(a.getAttribute("href").slice(1)) }))
+          .filter(s => s.el);
+        const headerH = () => (document.querySelector(".app-header") || {}).offsetHeight || 60;
+        let current = null;
+        const mark = () => {
+          /* The section whose top has passed just under the masthead, which is
+           * what a reader would call "the section I am looking at". */
+          const line = headerH() + 12;
+          let found = sections[0];
+          for (const s of sections) {
+            if (s.el.getBoundingClientRect().top <= line) found = s;
+          }
+          /* At the very bottom the last section wins, even if a tall one above
+           * still covers the line. */
+          if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+            found = sections[sections.length - 1];
+          }
+          if (!found || found === current) return;
+          current = found;
+          links.forEach(a => {
+            const on = a === found.a;
+            a.classList.toggle("active", on);
+            if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+          });
+        };
+
+        const top = document.getElementById("backToTop");
+        const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (top) {
+          top.addEventListener("click", () => {
+            window.scrollTo({ top: 0, behavior: smooth ? "smooth" : "auto" });
+            /* Focus goes back to the first link, so a keyboard user carries on
+             * from the top rather than from where the button was. */
+            const first = links[0] || document.querySelector("a.skip-link");
+            if (first) first.focus({ preventScroll: true });
+          });
+        }
+
+        /* Throttled on a timer rather than an animation frame: a browser pauses
+         * animation frames in a background tab, and then a tab restored
+         * mid-page would show the wrong section marked until the next scroll. */
+        let waiting = false;
+        const onScroll = () => {
+          if (waiting) return;
+          waiting = true;
+          setTimeout(() => {
+            waiting = false;
+            mark();
+            if (top) top.hidden = window.scrollY < window.innerHeight * 0.75;
+          }, 60);
+        };
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll);
+        onScroll();
+      })();
       /* ---- sections and filters this build does not show ------------------ *
        * MOVED here 23 September 2026, and it matters where it sits. This used to
        * run inside the map's code. When the map cannot start, on an iPad whose

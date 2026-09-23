@@ -569,3 +569,18 @@ html, body { overflow-x: hidden; }
   font-size: .9rem; line-height: 1.5; color: var(--body-text);
   background: var(--green-tint-alt); border-left: 4px solid var(--leaf-green); border-radius: 4px;
 }
+
+/* Back to the top of the page. Shown only once the reader is past the first
+   screen; the page itself decides that. */
+#backToTop {
+  position: fixed; right: 16px; bottom: 16px; z-index: 40;
+  display: inline-flex; align-items: center; gap: 6px;
+  font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer;
+  padding: 10px 14px; min-height: 40px;
+  color: var(--white); background: var(--raleigh-green);
+  border: 1px solid var(--raleigh-green); border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+#backToTop:hover { background: var(--mid-green); }
+#backToTop:focus-visible { outline-color: var(--raleigh-green); }
+@media (max-width: 640px) { #backToTop { right: 12px; bottom: 12px; padding: 9px 12px; } }
