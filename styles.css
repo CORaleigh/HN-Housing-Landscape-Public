@@ -552,3 +552,11 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
    own box instead. */
 html, body { overflow-x: hidden; }
 @supports (overflow-x: clip) { html, body { overflow-x: clip; } }
+
+/* Shown in the map's place only if a build sets UI.mapUnavailableHtml. Empty by
+   default, so a browser that cannot run the map simply shows no map. */
+.map-unavailable {
+  margin: 14px; padding: 14px 16px; max-width: 640px;
+  font-size: .9rem; line-height: 1.5; color: var(--body-text);
+  background: var(--green-tint-alt); border-left: 4px solid var(--leaf-green); border-radius: 4px;
+}

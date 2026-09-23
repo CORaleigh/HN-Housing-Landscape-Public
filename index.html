@@ -712,12 +712,37 @@
       // a section nobody will see.
       if (MODE === "external") document.getElementById("geographySection")?.remove();
 
-      const [FeatureLayer, GeoJSONLayer, VectorTileLayer, Basemap] = await Promise.all([
-        $arcgis.import("@arcgis/core/layers/FeatureLayer.js"),
-        $arcgis.import("@arcgis/core/layers/GeoJSONLayer.js"),
-        $arcgis.import("@arcgis/core/layers/VectorTileLayer.js"),
-        $arcgis.import("@arcgis/core/Basemap.js"),
-      ]);
+      /* ---- the map is allowed to fail on its own ------------------------- *
+       * Reported 23 September 2026: on an iPad the whole dashboard came up blank
+       * except the headings. The cause was here. The Maps SDK needs Safari 18 or
+       * later, and where it cannot load, `$arcgis` is undefined; this one line
+       * threw and, because the page is a single module, the charts, the tables
+       * and the counters below never ran either.
+       *
+       * Now the map and its filters are in a try of their own. If they cannot
+       * start, MAP_OK goes false, the map section is left as it is, and the rest
+       * of the page carries on. Everything after this point that needs the map
+       * checks MAP_OK first, and the completed-projects table reads the layer
+       * over plain HTTP instead, which needs no SDK at all.                    */
+      var MAP_OK = true;
+      var FeatureLayer, GeoJSONLayer, VectorTileLayer, Basemap;
+      /* Assigned inside the map's try, used by code that runs after it. */
+      var row, fFundingChecks, fillSel, syncGeographyImpl = () => {}, writeUrl;
+      try {
+        if (typeof $arcgis === "undefined") throw new Error("the ArcGIS Maps SDK did not load");
+        [FeatureLayer, GeoJSONLayer, VectorTileLayer, Basemap] = await Promise.all([
+          $arcgis.import("@arcgis/core/layers/FeatureLayer.js"),
+          $arcgis.import("@arcgis/core/layers/GeoJSONLayer.js"),
+          $arcgis.import("@arcgis/core/layers/VectorTileLayer.js"),
+          $arcgis.import("@arcgis/core/Basemap.js"),
+        ]);
+      } catch (mapErr) {
+        MAP_OK = false;
+        console.error("The map could not start; the rest of the dashboard will still load.", mapErr);
+      }
+
+      try {
+      if (!MAP_OK) throw new Error("map not started");
 
       /* ---- ArcGIS sign-in (Internal, once layers are restricted) ---------- *
        * Inert unless AUTH.appId is set, so the public build and the current
@@ -747,7 +772,7 @@
         }
       }
 
-      const viewEl = document.querySelector("arcgis-map");
+      var viewEl = document.querySelector("arcgis-map");
       viewEl.center = MAP.center;
       viewEl.zoom = MAP.zoom;
       // Wait for the map view, but don't let a slow/unavailable view block the
@@ -765,7 +790,14 @@
         });
       }
 
-      /* ---- formatters ---------------------------------------------------- */
+      } catch (mapErr) {
+        MAP_OK = false;
+        console.error("The map could not start; the rest of the dashboard will still load.", mapErr);
+      }
+
+      /* ---- formatters ------------------------------------------------------ *
+       * Deliberately outside the map's try: the charts and tables below use
+       * these, and they must not depend on the map having started.            */
       const num  = (v) => (v == null || String(v).trim() === "") ? 0 : Number(v);
       const fmtMoney = (v) => (v == null || v === "") ? "—" : "$" + Number(v).toLocaleString("en-US", { maximumFractionDigits: 0 });
       /* "FY 21-22" from the fiscal year's END year. "FY22" alone is ambiguous —
@@ -782,6 +814,9 @@
         return isNaN(d) ? String(v) : d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
       };
       const clean = (v) => (v == null || String(v).trim() === "" || String(v).trim() === "None") ? "" : String(v).trim();
+
+      try {
+      if (!MAP_OK) throw new Error("map not started");
 
       /* ---- symbols / renderers ------------------------------------------ */
       const marker = (color, size = 9) => ({ type: "simple-marker", size, color, outline: { color: "#ffffff", width: 1 } });
@@ -800,7 +835,7 @@
       const simpleRenderer = (color, label) => ({ type: "simple", symbol: marker(color, 6), label });
 
       /* ---- popups -------------------------------------------------------- */
-      function row(k, v) { return `<tr><td class="k">${k}</td><td>${v}</td></tr>`; }
+      row = function (k, v) { return `<tr><td class="k">${k}</td><td>${v}</td></tr>`; };
       const deidNote = `<div class="note" style="margin-top:8px;">${UI.deidNote}</div>`;
 
       function amiBar(a, bands, unrestrictedField) {
@@ -933,7 +968,7 @@
       const TITLE_FIELD = { dev: DEV_FIELDS.project, other: OTHER_FIELDS.fiscalYear, rehab: REHAB_FIELDS.rehabType, hba: HBA_FIELDS.fiscalYear };
 
       /* ---- build the four housing layers -------------------------------- */
-      const housing = {};
+      var housing = {};
       for (const cfg of HOUSING_LAYERS) {
         const fl = new FeatureLayer({
           url: cfg.url, title: cfg.title, id: cfg.id, visible: cfg.visible, outFields: ["*"],
@@ -1391,7 +1426,7 @@
        * Each filter maps to a field on the layers that HAVE it. A layer that
        * lacks a field for an active filter is HIDDEN on the map while that
        * filter is active, and its count badge reads "N/A" (not 0).           */
-      const devLayer = housing.housing_development;
+      var devLayer = housing.housing_development;
       // AMI band field order is fixed (≤20% … 80%); DEV_FIELDS.amiBands carries [field,label,color]
       // tuples while REHAB_FIELDS/HBA_FIELDS.amiBands are plain field-name arrays in the same order.
       const AMI_LABELS = DEV_FIELDS.amiBands.map(b => b[1]);
@@ -1408,7 +1443,7 @@
       const fAmi = [...fAmiChecks.querySelectorAll("input[type=checkbox]")];
       /* City funding source is a multi-select over the canonical source list
        * (not the raw Funding_Source values), plus an any/all combine mode.    */
-      const fFundingChecks = document.getElementById("fFundingChecks");
+      fFundingChecks = document.getElementById("fFundingChecks");
       fFundingChecks.innerHTML = FUNDING_SOURCES.map((s, i) =>
         `<label><input type="checkbox" value="${i}" /> ${s.label}</label>`).join("");
       const fFunding = [...fFundingChecks.querySelectorAll("input[type=checkbox]")];
@@ -1419,7 +1454,7 @@
         b.classList.toggle("is-active", on);
         b.setAttribute("aria-pressed", on ? "true" : "false");
       });
-      const [fYear, fStatus, fDevType, fDistrict, fNcod] =
+      var [fYear, fStatus, fDevType, fDistrict, fNcod] =
         ["fYear", "fStatus", "fDevType", "fDistrict", "fNcod"].map(id => document.getElementById(id));
 
       /* Field types vary by layer — a column that was empty at publish time can
@@ -1432,7 +1467,7 @@
         return !!f && NUMERIC_FIELD_TYPES.has(f.type);
       };
 
-      const fillSel = (sel, vals) => vals.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; sel.appendChild(o); });
+      fillSel = (sel, vals) => vals.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; sel.appendChild(o); });
       // distinct values unioned across every housing layer that has the field
       async function unionDistinct(filterKey, keepNone) {
         const set = new Set();
@@ -1528,10 +1563,10 @@
        * default so applyFilters (called on every filter change, including the
        * very first page load) never has to know or care whether that section
        * exists; it just calls this and the right thing happens either way.   */
-      let syncGeographyImpl = () => {};
+      syncGeographyImpl = () => {};
 
       const sqlStr = (v) => "'" + String(v).replace(/'/g, "''") + "'";
-      async function applyFilters() {
+      var applyFilters = async function () {
         const eq = { year: fYear.value, status: fStatus.value, devType: fDevType.value, district: fDistrict.value, ncod: fNcod.value };
         const ulo = +unitMinR.value, uhi = +unitMaxR.value, unitActive = unitIsActive();
         const amiChecked = fAmi.filter(cb => cb.checked).map(cb => +cb.value);
@@ -1596,7 +1631,8 @@
         // keep the dashboard geography panel in sync with the map's district filter
         syncGeographyImpl(fDistrict.value, "");
         writeUrl(fDistrict.value);
-      }
+      };   /* a function expression, so the semicolon matters: without it the
+              next line reads as an index into it and the filters never bind. */
       // Every filter applies instantly (no Apply button).
       [fYear, fStatus, fDevType, fDistrict, fNcod].forEach(s => s.addEventListener("change", applyFilters));
       fAmi.forEach(cb => cb.addEventListener("change", applyFilters));
@@ -1617,11 +1653,11 @@
         applyFilters();
       });
 
-      function writeUrl(dist) {
+      writeUrl = function (dist) {
         const p = new URLSearchParams(location.search);
         if (dist) p.set("district", dist); else p.delete("district");
         history.replaceState(null, "", location.pathname + (p.toString() ? "?" + p : "") + location.hash);
-      }
+      };
 
       /* fit to the development extent — deferred + non-blocking (goTo needs a
          ready view; never let it stall the dashboard below). */
@@ -1631,6 +1667,21 @@
           if (ext.extent) await viewEl.goTo(ext.extent.expand(1.2), { animate: false });
         } catch (e) {}
       }).catch(() => {});
+
+      } catch (mapErr) {
+        /* Anything at all in the map or its filters. The section keeps whatever
+         * it has and the page continues to the figures below. */
+        MAP_OK = false;
+        console.error("The map could not start; the rest of the dashboard will still load.", mapErr);
+        const note = UI.mapUnavailableHtml;
+        const host = document.querySelector(".map-section .main");
+        if (note && host && !host.querySelector(".map-unavailable")) {
+          const d = document.createElement("div");
+          d.className = "map-unavailable";
+          d.innerHTML = note;
+          host.appendChild(d);
+        }
+      }
 
       /* =================================================================== *
        *  DASHBOARD  — charts from the aggregate summary table (source of truth)
@@ -2010,7 +2061,7 @@
        *  Section) is already removed above; this skips the layer queries and
        *  DOM writes that section would otherwise need, entirely, on External.
        * =================================================================== */
-      if (MODE !== "external") {
+      if (MODE !== "external" && MAP_OK) {
       /* `summaryFields` are the matching columns in the aggregate tracker, used by
        * the reconciliation dialog to line the mapped counts up against the
        * reported source of truth.                                               */
@@ -2260,7 +2311,7 @@
       if (urlDist) { if ([...fDistrict.options].some(o => o.value === urlDist)) fDistrict.value = urlDist; distSel.value = distValues.includes(urlDist) ? urlDist : ""; }
       renderGeography(distSel.value, ncodSel.value);
       } // end: MODE !== "external" (City housing by geography)
-      await applyFilters();
+      if (MAP_OK) await applyFilters();
 
       /* ===== AFFORDABILITY & FUNDING: Units by Source + Funding by Year ===== */
       try {
@@ -2442,17 +2493,28 @@
       /* ===== HOUSING PIPELINE ===== */
       try {
         const F = DEV_FIELDS;
-        const q = devLayer.createQuery();
-        q.where = "1=1";
-        q.returnGeometry = false;
         /* filter(Boolean) because a build may not define every one of these; the
          * produced-units field exists only where the layer carries it. */
-        q.outFields = [F.project, F.fiscalYear, F.totalUnits, F.unitsCounted, F.population,
-                       F.fundingSource, F.developmentType, F.status, F.projectStatus].filter(Boolean);
-
-        q.where = withYearClause(q.where);
-        const res = await devLayer.queryFeatures(q);
-        const allRows = res.features.map(f => f.attributes);
+        const outFields = [F.project, F.fiscalYear, F.totalUnits, F.unitsCounted, F.population,
+                           F.fundingSource, F.developmentType, F.status, F.projectStatus].filter(Boolean);
+        const where = withYearClause("1=1");
+        /* Through the layer when the map is running, over plain HTTP when it is
+         * not. The completed-projects table is the one thing below the map that
+         * reads the development layer, and it has to work on a browser the Maps
+         * SDK does not support. */
+        const allRows = await (async () => {
+          if (MAP_OK && devLayer) {
+            const q = devLayer.createQuery();
+            q.where = where; q.returnGeometry = false; q.outFields = outFields;
+            return (await devLayer.queryFeatures(q)).features.map(f => f.attributes);
+          }
+          const cfg = HOUSING_LAYERS.find(c => c.kind === "dev") || HOUSING_LAYERS[0];
+          const url = cfg.url + "/query?" + new URLSearchParams({
+            where: where, outFields: outFields.join(","), returnGeometry: "false", f: "json" });
+          const j = await (await fetch(url)).json();
+          if (j.error) throw new Error(JSON.stringify(j.error));
+          return (j.features || []).map(f => f.attributes);
+        })();
         console.log("Housing pipeline - total dev records:", allRows.length);
 
         const totalUnitsAll = allRows.reduce((s, a) => s + (num(a[F.totalUnits]) || 0), 0);

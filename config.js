@@ -405,6 +405,16 @@ export const UI = {
    * its project table drops Units completed and Status. All hidden, not removed. */
   showPipelineSection: false,
 
+  /* Shown in the map's place when the map cannot start, and only then. Added
+   * 23 September 2026 after an iPad showed an empty map area with no
+   * explanation. The mapping software needs a recent browser; where it cannot
+   * run, the figures on the rest of the page are unaffected and this says so. */
+  mapUnavailableHtml:
+    "<strong>The map cannot be shown in this browser.</strong> Maps here need a recent " +
+    "version of Safari, Chrome or Edge. Updating the browser, or updating the iPad, iPhone " +
+    "or computer's software, usually brings it back. Everything else on this page, including " +
+    "every figure and table below, is complete and unaffected.",
+
   /* Samantha, 22 September 2026, wording agreed with Mary. Housing's FY26-FY30
    * tracker lists Healing Transitions as New construction, 113 units, Complete,
    * so these units are inside FY 2025-2026's 669 Rental Units Constructed, not
