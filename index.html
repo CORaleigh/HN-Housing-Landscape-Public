@@ -600,6 +600,44 @@
         return (ds && typeof ds.adaptRows === "function") ? ds.adaptRows(rows) : rows;
       };
       if (!UI.showSourceNotes) document.body.classList.add("hide-source-notes");
+      /* ---- sections and filters this build does not show ------------------ *
+       * MOVED here 23 September 2026, and it matters where it sits. This used to
+       * run inside the map's code. When the map cannot start, on an iPad whose
+       * Safari is older than the Maps SDK supports, that code is skipped, and
+       * every hidden thing came back: the pipeline section, the NCOD control and
+       * the rest. Hiding is a decision about the build, not about the map, so it
+       * runs first and unconditionally.
+       *
+       * Hidden rather than removed: each comes back by flipping its flag once the
+       * Rental Development Tracker is reconciled.                             */
+      /* Sections and filters Samantha asked to drop before the council retreat.
+       * Hidden rather than removed: each comes back by flipping its flag once the
+       * Rental Development Tracker is reconciled. */
+      const hideIf = (flag, sel) => {
+        if (UI[flag] !== false) return;
+        const el = typeof sel === "string" ? document.querySelector(sel) : sel;
+        if (el) el.style.display = "none";
+      };
+      hideIf("showFundingFilter", "#fFundingHead");
+      hideIf("showFundingFilter", "#fFundingChecks");
+      hideIf("showFundingFilter", "#fundingFilterNote");
+      hideIf("showLihtcFilter", "#fDevTypeField");
+      hideIf("showAmiFilter", "#fAmiField");
+      hideIf("showAffordabilitySection", "#affordabilitySection");
+      hideIf("showGeographySection", "#geographySection");
+      hideIf("showPipelineSection", "#pipelineSection");
+      /* Samantha, 15 September 2026: the bond section shows committed, complete
+       * and pipeline together, with no choice. The select stays in the page on its
+       * default, so every figure below renders exactly as it did unfiltered. */
+      hideIf("showBondStatusFilter", ".bond-filter-bar");
+      if (UI.showNcodFilter === false) {
+        const ncodControl = document.getElementById("ncodControl");
+        /* Set display directly. The wrapper carries an inline display:contents so
+         * its label and select stay in the parent flex row, and an inline style
+         * beats the hidden attribute's stylesheet rule. */
+        if (ncodControl) ncodControl.style.display = "none";
+      }
+
 
       // Name the build in the tab title and the masthead so the Internal (PII)
       // and Public copies can never be confused for one another on a shared screen.
@@ -2118,33 +2156,6 @@
       /* NCOD is a neighbourhood overlay name, which comes from a spatial join
        * rather than from any source file. A build whose layer does not carry it
        * would offer a filter with nothing in it. */
-      /* Sections and filters Samantha asked to drop before the council retreat.
-       * Hidden rather than removed: each comes back by flipping its flag once the
-       * Rental Development Tracker is reconciled. */
-      const hideIf = (flag, sel) => {
-        if (UI[flag] !== false) return;
-        const el = typeof sel === "string" ? document.querySelector(sel) : sel;
-        if (el) el.style.display = "none";
-      };
-      hideIf("showFundingFilter", "#fFundingHead");
-      hideIf("showFundingFilter", "#fFundingChecks");
-      hideIf("showFundingFilter", "#fundingFilterNote");
-      hideIf("showLihtcFilter", "#fDevTypeField");
-      hideIf("showAmiFilter", "#fAmiField");
-      hideIf("showAffordabilitySection", "#affordabilitySection");
-      hideIf("showGeographySection", "#geographySection");
-      hideIf("showPipelineSection", "#pipelineSection");
-      /* Samantha, 15 September 2026: the bond section shows committed, complete
-       * and pipeline together, with no choice. The select stays in the page on its
-       * default, so every figure below renders exactly as it did unfiltered. */
-      hideIf("showBondStatusFilter", ".bond-filter-bar");
-      if (UI.showNcodFilter === false) {
-        const ncodControl = document.getElementById("ncodControl");
-        /* Set display directly. The wrapper carries an inline display:contents so
-         * its label and select stay in the parent flex row, and an inline style
-         * beats the hidden attribute's stylesheet rule. */
-        if (ncodControl) ncodControl.style.display = "none";
-      }
       const scopeNoteEl = document.getElementById("distScopeNote");
       if (scopeNoteEl && UI.geographyScopeNoteHtml) {
         scopeNoteEl.innerHTML = UI.geographyScopeNoteHtml;
