@@ -630,6 +630,10 @@
        * and pipeline together, with no choice. The select stays in the page on its
        * default, so every figure below renders exactly as it did unfiltered. */
       hideIf("showBondStatusFilter", ".bond-filter-bar");
+      /* Samantha, 23 September 2026, at the request of a director: the line under
+       * the bond counters saying how many projects are shown. Hidden, not
+       * removed; renderBondDev still writes it. */
+      hideIf("showBondScopeNote", "#bondDevCaveat");
       if (UI.showNcodFilter === false) {
         const ncodControl = document.getElementById("ncodControl");
         /* Set display directly. The wrapper carries an inline display:contents so

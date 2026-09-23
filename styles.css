@@ -382,12 +382,21 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
 .version-badge.version-public   { background: var(--green-tint); color: var(--raleigh-green); border: 1px solid var(--leaf-green); }
 .version-badge.version-internal { background: #FDECEA; color: #A8322D; border: 1px solid #A8322D; }
 .dash-wrap .sub { color: var(--muted-text); font-size: .9rem; margin-bottom: 18px; }
-.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 22px; }
+/* min(150px, 100%) rather than a flat 150px: in a narrow card three counters
+   cannot each be 150px wide, and the old rule let the figures run out past the
+   tile instead of letting the tiles shrink. Reported 23 September 2026 on the
+   bond gauge, where $77,575,867 was cut off mid-number. */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 14px; margin-bottom: 22px; }
 .kpi {
   background: var(--white); border: 1px solid var(--border); border-top: 4px solid var(--leaf-green);
   border-radius: 6px; padding: 14px 16px;
 }
-.kpi .num { font-size: 1.8rem; font-weight: 800; color: var(--raleigh-green); line-height: 1; }
+/* The figure shrinks with the tile rather than overflowing it, and a very long
+   one wraps instead of being clipped. */
+.kpi .num {
+  font-size: clamp(1.15rem, 3.6vw, 1.8rem); font-weight: 800; color: var(--raleigh-green);
+  line-height: 1.05; overflow-wrap: anywhere;
+}
 .kpi .lbl { font-size: .78rem; color: #555; margin-top: 6px; }
 .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px; }
 .card { background: var(--white); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; }
@@ -539,9 +548,9 @@ body.hide-source-notes .caveat:not(#citywideCaveat):not(.card-note) { display: n
   .dash-wrap { padding-left: 12px; padding-right: 12px; }
   .card { padding: 12px 12px; }
   .kpi { padding: 11px 12px; }
-  .kpi .num { font-size: 1.45rem; }
+  .kpi .num { font-size: clamp(1.05rem, 6vw, 1.45rem); }
   /* Two counters to a row rather than one very wide one. */
-  .kpi-row { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 10px; }
+  .kpi-row { grid-template-columns: repeat(auto-fit, minmax(min(128px, 100%), 1fr)); gap: 10px; }
   .welcome-modal, .info-modal { padding: 16px 14px; max-height: 88vh; }
   /* A fixed-height chart is unreadable on a narrow screen when it also has to
      hold a legend. */

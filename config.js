@@ -404,6 +404,9 @@ export const UI = {
    * section shows committed, complete and pipeline together with no toggle, and
    * its project table drops Units completed and Status. All hidden, not removed. */
   showPipelineSection: false,
+  /* The "All 27 project(s), complete and pipeline." line under the bond
+   * counters. Off at a director's request, 23 September 2026. */
+  showBondScopeNote: false,
 
   /* Shown in the map's place when the map cannot start, and only then. Added
    * 23 September 2026 after an iPad showed an empty map area with no
