@@ -251,6 +251,8 @@ export const UI = {
   /* On-screen name for the development unit figure. See DEV_FIELDS.totalUnits. */
   unitsLabel: "Units",
   docTitle: "City of Raleigh Housing Landscape",
+  /* Shown in the masthead beside the logo. Samantha, 23 September 2026. */
+  appTitle: "Housing Production Dashboard",
   /* Mary, 17 September 2026: nothing on the page may suggest there is another
    * version of this dashboard, or that anything is being held back. An empty
    * label hides the masthead badge; the disclaimer and both footers below drop

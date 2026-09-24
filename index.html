@@ -112,7 +112,7 @@
 
     <header class="app-header">
       <img class="logo" src="./raleigh_horizontal.png" alt="City of Raleigh" />
-      <div class="title">Housing Landscape
+      <div class="title"><span id="appTitle">Housing Landscape</span>
         <span class="version-badge" id="versionBadge" hidden></span>
         <small>Affordable &amp; City-Supported Housing</small>
       </div>
@@ -817,6 +817,14 @@
             .forEach(d => { d.open = false; });
         }
       })();
+
+      /* The name in the masthead. Samantha, 23 September 2026: this build says
+        * "Housing Production Dashboard". The green band below it, "Housing
+        * Landscape Map", is a section heading and is left alone. */
+      if (UI.appTitle) {
+        const t = document.getElementById("appTitle");
+        if (t) t.textContent = UI.appTitle;
+      }
 
       const versionBadge = document.getElementById("versionBadge");
       if (versionBadge && UI.versionLabel) {
