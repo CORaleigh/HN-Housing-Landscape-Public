@@ -250,7 +250,7 @@ export const DATA_SOURCES = {
 export const UI = {
   /* On-screen name for the development unit figure. See DEV_FIELDS.totalUnits. */
   unitsLabel: "Units",
-  docTitle: "City of Raleigh Housing Landscape",
+  docTitle: "City of Raleigh Housing Production Dashboard",
   /* Shown in the masthead beside the logo. Samantha, 23 September 2026. */
   appTitle: "Housing Production Dashboard",
   /* Mary, 17 September 2026: nothing on the page may suggest there is another
