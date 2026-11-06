@@ -578,7 +578,10 @@
         DEV_FIELDS, REHAB_FIELDS, HBA_FIELDS, OTHER_FIELDS, BRAND,
         FUNDING_SOURCES,
         MODE, UI, AUTH,
-      } from "./config.js";
+      /* The 202611061417 stamp is filled in by build.ps1. Without it a browser can
+       * hold a cached config for up to ten minutes after a deploy, so a page
+       * with new code reads the previous build's settings. */
+      } from "./config.js?v=202611061417";
 
       /* ---- build-mode wiring --------------------------------------------- *
        * MODE is "external" or "internal", set by whichever config variant was
