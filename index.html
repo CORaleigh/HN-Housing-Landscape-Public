@@ -609,10 +609,24 @@
         ? HIDDEN_YEARS.map(y => `${DEV_FIELDS.fiscalYear} <> '${y.replace(/'/g, "''")}'`).join(" AND ")
         : "";
       const withYearClause = (where) => {
-        if (!YEAR_CLAUSE) return where || "1=1";
-        return where && where !== "1=1" ? `(${where}) AND ${YEAR_CLAUSE}` : YEAR_CLAUSE;
+        /* Keeps its old name because every read of the layer already calls it;
+         * it now carries the hidden projects as well as the hidden years. */
+        const parts = [YEAR_CLAUSE, PROJECT_CLAUSE].filter(Boolean);
+        if (!parts.length) return where || "1=1";
+        const hide = parts.join(" AND ");
+        return where && where !== "1=1" ? `(${where}) AND ${hide}` : hide;
       };
       const yearHidden = (v) => HIDDEN_YEARS.indexOf(String(v || "").trim()) !== -1;
+
+      /* Individual projects a build chooses not to map. Same approach as the
+       * years above: nothing is deleted, the rows stay in the layer and in the
+       * workbook, and the filter applies to every read of the layer so the map,
+       * the counts, the dropdowns and the tables agree with each other. */
+      const HIDDEN_PROJECTS = (UI.hideProjects || []).map(String);
+      const PROJECT_CLAUSE = HIDDEN_PROJECTS.length
+        ? HIDDEN_PROJECTS.map(p => `${DEV_FIELDS.project} <> '${p.replace(/'/g, "''")}'`).join(" AND ")
+        : "";
+      const projectHidden = (v) => HIDDEN_PROJECTS.indexOf(String(v || "").trim()) !== -1;
 
       /* Fetch a source declared in DATA_SOURCES and hand back plain attribute
        * rows. A build whose table is shaped differently supplies `adaptRows`,

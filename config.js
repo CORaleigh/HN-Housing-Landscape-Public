@@ -269,10 +269,15 @@ export const UI = {
   showSourceNotes: false,
   showPipelineFinancials: false,
 
+  /* Reworded for the FY27 Q1 update, 3 November 2026. The newest fiscal year on
+   * the charts now holds one quarter, so the page says so rather than leaving a
+   * short bar to be read as a bad year. */
   citywideCaveatHtml:
     "The data feeding this dashboard and the below tables are updated quarterly. " +
     "The latest update reflects the Housing and Community Development Department's " +
-    "production data from FY 2015-2016 through the end of Quarter 4 Fiscal Year 2025-2026 (June 30, 2026).",
+    "production data through the end of Quarter 1 Fiscal Year 2026-2027 (September 30, 2026). " +
+    "<strong>FY 2026-2027 covers that first quarter only</strong>, so it is not comparable " +
+    "with the full years beside it.",
 
   dataNotesHtml:
     'AMI affordability breakdowns show only for <strong>Complete</strong> development ' +
@@ -397,6 +402,12 @@ export const UI = {
    * department's own development figure, with nothing left to explain. */
   hideFiscalYears: ["FY 2014-2015"],
 
+  /* Samantha, 4 November 2026: these two come off the map before the Q1 figures
+   * are published. Hidden, not deleted. Both are pre-construction FY 2025-2026
+   * projects and they stay in the layer, in the workbook and in Housing's own
+   * tracker; deleting either line brings the project back. */
+  hideProjects: ["Brook Haven", "The Willow"],
+
   /* Funding source and LIHTC come off the completed table, also at Samantha's
    * request. Both are still in the layer, the popup and the workbook. */
   completedTableHideColumns: ["fundingSource", "developmentType"],
@@ -426,7 +437,8 @@ export const UI = {
    * the 124 preserved (Jeffries Ridge, Tryon Grove and Avonlea). */
   catTableExtraNoteHtml:
     "Please note, 113 units in the rental units constructed category for 25-26 are " +
-    "shelter spaces at Healing Transitions Men's Shelter.",
+    "shelter spaces at Healing Transitions Men's Shelter. FY 2026-2027 covers Quarter 1 " +
+    "only, July to September 2026.",
   showBondStatusFilter: false,
   bondProjectsHideColumns: ["unitsCompleted", "status"],
 
