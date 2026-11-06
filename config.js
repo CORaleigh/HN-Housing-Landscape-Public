@@ -408,6 +408,10 @@ export const UI = {
    * tracker; deleting either line brings the project back. */
   hideProjects: ["Brook Haven", "The Willow"],
 
+  /* The newest fiscal year the map's year filter offers. Raise it with each
+   * quarterly publish; FY2026-2027 was added on 6 November 2026. */
+  latestFiscalYearEnd: 2027,
+
   /* Funding source and LIHTC come off the completed table, also at Samantha's
    * request. Both are still in the layer, the popup and the workbook. */
   completedTableHideColumns: ["fundingSource", "developmentType"],

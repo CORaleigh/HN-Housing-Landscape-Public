@@ -1649,11 +1649,16 @@
         return [...set].sort((a, b) => (a === "None") - (b === "None") || a.localeCompare(b));
       }
       await Promise.all(HOUSING_LAYERS.map(c => housing[c.id].load()));
-      // Only publish through FY26 (ending June 30, 2026); hide FY27+ from the year filter.
+      /* The filter offers years up to the latest quarter published, and no
+        * further. The cap was fixed at FY2026 while the layer still dated
+        * projects by the year their loan was awarded; now that a completed
+        * project carries the year it finished, the cap moves with each
+        * quarterly update and lives in the build's config. */
+      const LATEST_YEAR_END = UI.latestFiscalYearEnd || 2026;
       const publishedYears = (await unionDistinct("year")).filter(y => {
         if (yearHidden(y)) return false;
         const end = parseInt(String(y).split("-")[1], 10);
-        return !end || end <= 2026;
+        return !end || end <= LATEST_YEAR_END;
       });
       fillSel(fYear,     publishedYears);
       // Funding source is driven by FUNDING_SOURCES, not by distinct values —
